@@ -1,7 +1,7 @@
-﻿using Microsoft.Data.SqlClient;
-using System.Data;
+﻿using CoworkingSpace.Models;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
-
+using System.Data;
 using System.Diagnostics;
 
 namespace CoworkingSpace.DAL
@@ -163,8 +163,43 @@ namespace CoworkingSpace.DAL
         }
 
 
+        public static async Task<SqlDataReader> GetNotificationsListAsync(SqlCommand command)
+        {
+            SqlConnection connection = new SqlConnection(connectionString);
+            await connection.OpenAsync();
+            command.Connection = connection;
+            SqlDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection);
+            return reader;
+        }
 
-      }
+
+        public static async Task<bool> ExecuteNonQueryAsync(SqlCommand command)
+        {
+         
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                command.Connection = connection;
+
+                try
+                {
+                    await connection.OpenAsync();
+                   
+                    int rowsAffected = await command.ExecuteNonQueryAsync();
+
+                  
+                    return rowsAffected > 0;
+                }
+                catch (Exception ex)
+                {
+                  
+                    return false;
+                }
+                
+            }
+        }
+
+    }
 
   }
 

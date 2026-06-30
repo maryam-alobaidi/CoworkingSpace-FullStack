@@ -1,0 +1,92 @@
+<div class="container my-5 pt-4">
+
+  <div class="text-center mb-5">
+    <span class="badge bg-warning-subtle text-warning-emphasis rounded-pill px-3 py-2 mb-2 fw-semibold text-uppercase tracking-wider">Community & Learning</span>
+    <h2 class="fw-extrabold text-dark  mb-3">Upcoming Events & Workshops</h2>
+    <p class="text-muted mx-auto" style="max-width: 600px;">
+      Join inspiring talks, networking nights, and premium workshops held right inside our premium spaces. Expand your network today.
+    </p>
+  </div>
+
+  <div class="row g-4">
+
+    @for (ev of eventService.events(); track ev.id) {
+
+      
+      @if(getEventDate(ev.eventDate)>=tody){
+
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="card h-100 event-card border-0 shadow-sm overflow-hidden position-relative bg-white">
+          
+          <div class="position-absolute top-0 end-0 m-3 z-3 bg-white px-3 py-1.5 rounded-pill shadow-sm">
+            @if (ev.ticketPrice === 0) {
+              <span class="text-success fw-bold small text-uppercase">Free</span>
+            } @else {
+              <span class="text-primary fw-extrabold fs-5">${{ ev.ticketPrice }}</span>
+            }
+          </div>
+
+          <div class="card-img-wrapper position-relative overflow-hidden" style="height: 200px;">
+            <img [src]="ev.imageUrl" class="card-img-top w-100 h-100 object-fit-cover event-img transition-all" [alt]="ev.title">
+            <div class="img-overlay position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-10"></div>
+          </div>
+
+          <div class="card-body p-4 d-flex flex-column justify-content-between">
+            
+            <div>
+              <div class="d-flex align-items-center gap-2 mb-3 text-secondary small">
+                <i class="bi bi-calendar3 text-primary"></i>
+                <span class="fw-medium">{{ ev.eventDate | date:'fullDate' }}</span>
+              </div>
+
+              <h4 class="card-title fw-bold text-dark mb-2 text-truncate">
+                {{ ev.title }}
+              </h4>
+              <p class="text-muted small card-description mb-4" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                {{ ev.description }}
+              </p>
+            </div>
+
+            <div class="mt-auto">
+              <div class="d-flex justify-content-between align-items-center mb-2 small">
+                <span class="text-secondary">Available Seats:</span>
+                <span class="fw-bold" [ngClass]="ev.availableSeats < 10 ? 'text-danger' : 'text-success'">
+                  {{ ev.availableSeats }} / {{ ev.maxAttendees }} Left
+                </span>
+              </div>
+              
+              <div class="progress mb-4 rounded-pill" style="height: 6px;">
+                <div class="progress-bar rounded-pill" 
+                     [ngClass]="ev.availableSeats < 10 ? 'bg-danger' : 'bg-primary'"
+                     role="progressbar" 
+                     [style.width.%]="(ev.availableSeats / ev.maxAttendees) * 100">
+                </div>
+              </div>
+
+              @if (ev.availableSeats > 0) {
+                <button class="btn btn-primary w-100 rounded-pill py-2.5 fw-bold shadow-sm btn-buy-ticket"  [routerLink]="['/event-book', ev.id]">
+                  Get Ticket <i class="bi bi-ticket-perforated ms-1"></i>
+                </button>
+              } @else {
+                <button class="btn btn-secondary w-100 rounded-pill py-2.5 fw-bold" disabled>
+                  Sold Out <i class="bi bi-exclamation-octagon ms-1"></i>
+                </button>
+              }
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    }
+    } @empty {
+      <div class="col-12 text-center py-5">
+        <div class="spinner-border text-primary mb-3" role="status">
+          <span class="visually-hidden">Loading events...</span>
+        </div>
+        <p class="text-muted">Discovering inspiring events for you...</p>
+      </div>
+    }
+
+  </div>
+</div>

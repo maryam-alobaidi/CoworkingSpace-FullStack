@@ -10,7 +10,8 @@ namespace CoworkingSpace.API.Controllers
     [Route("api/webhook")]
     public class StripeWebhookController : Controller
     {
-        // هذا السر ستحصلين عليه عند تشغيل Stripe CLI (سأشرحه لكِ لاحقاً)
+        // هذا السر ستحصلين عليه عند تشغيل Stripe CLI لاجل الترجربه عمليه الدفع المزيفه عليه
+
         const string endpointSecret = "whsec_e67b06dbc1d89e5c5cd52f802fa16d914289cb6cdf3bdd4f5d6f02f0878be101";
 
         private readonly IEmailService _emailService;
@@ -22,48 +23,54 @@ namespace CoworkingSpace.API.Controllers
 
 
 
-       
+
         [HttpPost]
         public async Task<IActionResult> Index()
         {
             var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
             try
             {
-                //عندما تنجح عملية الدفع، يرسل Stripe رسالة (Webhook). هذا السطر وظيفته التأكد من أن الرسالة حقيقية وقادمة من Stripe فعلاً، وليس "هكر" يحاول خداع النظام وإيهامه بأنه دفع وهو لم يدفع.
-
                 var stripeEvent = EventUtility.ConstructEvent(json,
                     Request.Headers["Stripe-Signature"], endpointSecret);
 
-                if (stripeEvent.Type == "payment_intent.succeeded")
+                
+                if (stripeEvent.Type == "checkout.session.completed")
                 {
-                    var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
+                    // 🌟 2. تحويل الكائن القادم إلى Session بدلاً من PaymentIntent
+                    var session = stripeEvent.Data.Object as Stripe.Checkout.Session;
 
-               
-                    string type = paymentIntent.Metadata.ContainsKey("Type") ? paymentIntent.Metadata["Type"] : "";
 
-                 
+                    string type = session.Metadata.ContainsKey("Type") ? session.Metadata["Type"] : "";
                     int referenceId = 0;
+
                     if (type == "Space")
                     {
-                    
-                        referenceId = int.Parse(paymentIntent.Metadata["BookingId"]);
+                        referenceId = int.Parse(session.Metadata["BookingId"]);
                     }
                     else if (type == "Event")
                     {
-                        referenceId = int.Parse(paymentIntent.Metadata["TicketId"]);
+                        referenceId = int.Parse(session.Metadata["TicketId"]);
                     }
 
                     if (referenceId > 0)
                     {
-                        await _HandleSuccessfulPayment(referenceId, type, paymentIntent);
+                       
+                        var mockIntent = new PaymentIntent
+                        {
+                            Id = session.PaymentIntentId ?? session.Id,
+                            Amount = session.AmountTotal ?? 0,
+                            Currency = session.Currency ?? "usd",
+                            PaymentMethodTypes = session.PaymentMethodTypes ?? new List<string> { "card" }
+                        };
+
+                        await _HandleSuccessfulPayment(referenceId, type, mockIntent);
                     }
                 }
 
                 return Ok();
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
-             
                 if (ex.InnerException != null)
                     Console.WriteLine($"Inner Error: {ex.InnerException.Message}");
 
@@ -74,9 +81,9 @@ namespace CoworkingSpace.API.Controllers
         {
             bool isSaved = false;
 
+            
             if (type == "Event")
             {
-                // معالجة التذاكر (كودك القديم)
                 var ticket = await clsEventTickets.Find(referenceId);
                 if (ticket != null)
                 {
@@ -85,9 +92,26 @@ namespace CoworkingSpace.API.Controllers
                     var user = clsUsers.Find(ticket.UserId);
                     if (user != null) await ticket.SaveTicketWithEmailLog(user.Email, user.FullName, _emailService);
                     isSaved = true;
+
+                    // 🔔 إضافة الإشعار الخاص بالتذاكر وتوجيهه إلى مسار الأنجولار الجديد
+                    clsNotifications notifications = new clsNotifications
+                    {
+                        UserID = ticket.UserId,
+                        Title = "Event Ticket Purchased 🎟️",
+                        Message = $"Your Ticket for the event has been successfully purchased.",
+                        NotificationType = "EventTicket",
+                        TargetURL = "/dashboard/event-tickets", 
+                        IsRead = false,
+                        CreatedAt = DateTime.Now,
+                        ReadAt = null,
+                        Mode = clsNotifications.enMode.addNew
+                    };
+
+                    await notifications.AddNewNotifications();
                 }
             }
-         
+
+            // 2️⃣ ثانياً: حالة حجز مساحات العمل والطاولات (Space)
             if (type == "Space")
             {
                 var booking = clsSpaceBookings.Find(referenceId);
@@ -98,24 +122,39 @@ namespace CoworkingSpace.API.Controllers
                 }
 
                 Console.WriteLine($"✅ Found Booking for User: {booking.UserId}. Updating now...");
-                if (booking != null)
+
+                booking.PaymentStatus = "Completed";
+                booking.BookingStatus = "Confirmed";
+                booking.TransactionId = intent.Id;
+                var user = clsUsers.Find(booking.UserId);
+                if (user != null) await booking.SaveTicketWithEmailLog(user.Email, user.FullName, _emailService);
+                isSaved = true;
+
+                // 🔔 🌟 هنا الجزء الجديد: توليد إشعار فخم ومستقل لحجز المساحة وتوجيهه للنظام الجديد
+                clsNotifications notifications = new clsNotifications
                 {
-                    booking.PaymentStatus = "Completed";
-                    booking.BookingStatus = "Confirmed";
-                    booking.TransactionId = intent.Id;
-                    var user = clsUsers.Find(booking.UserId);
-                    if (user != null) await booking.SaveTicketWithEmailLog(user.Email, user.FullName, _emailService);
-                    isSaved = true;
-                }
+                    UserID = booking.UserId,
+                    Title = "Space Booking Confirmed 🏢",
+                    Message = $"Your reservation for Space #{booking.SpaceId} has been successfully confirmed.",
+                    NotificationType = "SpaceBooking",
+                    TargetURL = "/dashboard/office-bookings", // 🌟 تم التوجيه لمكون الـ Office Bookings
+                    IsRead = false,
+                    CreatedAt = DateTime.Now,
+                    ReadAt = null,
+                    Mode = clsNotifications.enMode.addNew
+                };
+
+                await notifications.AddNewNotifications();
             }
 
-           
+
+            // 3️⃣ ثالثاً: تسجيل عملية الدفع في قاعدة البيانات (Payments Table)
             if (isSaved)
             {
                 clsPayments payment = new clsPayments
                 {
                     ReferenceID = referenceId,
-                    ReferenceType = type, 
+                    ReferenceType = type,
                     Amount = (decimal)intent.Amount / 100,
                     Currency = intent.Currency.ToUpper(),
                     PaymentMethod = intent.PaymentMethodTypes.FirstOrDefault() ?? "card",

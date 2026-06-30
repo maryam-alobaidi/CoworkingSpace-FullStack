@@ -1,0 +1,51 @@
+<div class="container text-center my-5 p-5 shadow-lg rounded bg-white" style="max-width: 600px;">
+  <div class="success-checkmark my-4">
+    <div class="check-icon">
+      <span class="icon-line line-tip"></span>
+      <span class="icon-line line-long"></span>
+      <div class="icon-circle"></div>
+      <div class="icon-fix"></div>
+    </div>
+  </div>
+
+  <h2 class="text-success fw-bold">¡Payment completed successfully! 🎉</h2>
+  <p class="text-muted fs-5">Thank you for your purchase. Everything is set up for you!</p>
+  
+  <hr class="my-4">
+
+  <div class="card bg-light p-3 border-0 text-start">
+    <h5 class="fw-bold mb-3">Order Summary:</h5>
+    
+    @if (type === 'Space') {
+      <div>
+        <p class="mb-2"><strong>Service Type:</strong> Workspace Booking 🏢</p>
+        <p class="mb-2"><strong>Booking ID:</strong> #{{ referenceId }}</p>
+      </div>
+    } @else if (type === 'Event') {
+      <div>
+        <p class="mb-2"><strong>Service Type:</strong> Event Ticket 🎟️</p>
+        <p class="mb-2"><strong>Ticket ID:</strong> #{{ referenceId }}</p>
+      </div>
+    }
+
+    <p class="mb-2"><strong>Payment Status:</strong> <span class="badge bg-success">Success / Paid</span></p>
+    <p class="mb-0 text-secondary"><small>We have sent your official invoice and details to your email.</small></p>
+  </div>
+
+  <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+    
+    @if (type === 'Space') {
+      <button class="btn btn-primary btn-lg px-4" routerLink="/dashboard/my-bookings">
+        Go to My Bookings
+      </button>
+    } @else if (type === 'Event') {
+      <button class="btn btn-outline-primary btn-sm rounded-pill px-4" routerLink="/dashboard/my-tickets">
+        Go to My Tickets
+      </button>
+    }
+
+    <button class="btn btn-outline-primary btn-sm rounded-pill px-4" routerLink="/">
+      Home
+    </button>
+  </div>
+</div>

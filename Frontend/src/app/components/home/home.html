@@ -1,0 +1,174 @@
+
+
+
+<div class="hero-section d-flex align-items-center text-white position-relative overflow-hidden">
+  <div class="container position-relative z-3 py-5 text-center text-lg-start">
+    <div class="row align-items-center g-5">
+      
+      
+      <div class="col-lg-7">
+        <span class="badge bg-primary text-white rounded-pill px-3 py-2 mb-3 fw-bold text-uppercase tracking-wider">The Future of Coworking</span>
+        <h1 class="display-3 fw-extrabold mb-4">
+          Where Inspiration <br><span class="text-gradient">Meets Productivity</span>
+        </h1>
+        <p class="lead text-white-50 mb-5 fs-5">
+          Discover premium flexible workspaces designed around your success. Join a vibrant community, attend elite networking events, and book your next desk instantly.
+        </p>
+        
+        <div class="d-flex flex-wrap justify-content-center justify-content-lg-start gap-3">
+          <a routerLink="/workspace" class="btn btn-outline-primary btn-lg rounded-pill px-4 py-3 fw-bold shadow">Explore Spaces</a>
+          <a routerLink="/events" class="btn btn-outline-light btn-lg rounded-pill px-4 py-3 fw-bold">Book an Event</a>
+        </div>
+      </div>
+
+      <!-- القسم الأيمن: الصورة التفاعلية -->
+      <div class="col-lg-5 d-none d-lg-block animate__animated animate__fadeInRight">
+        <div class="hero-image-wrapper position-relative">
+         <img src="/images/hero.avif" alt="Coworking Creative Community" 
+ class="img-fluid rounded-5 shadow-lg hero-main-img border border-secondary border-opacity-25 opacity-50">
+          <div class="glow-effect position-absolute top-50 start-50 translate-middle z-n1"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="hero-overlay position-absolute top-0 start-0 w-100 h-100"></div>
+</div>
+
+<div class="container my-5 position-relative z-3 stats-wrapper">
+  <div class="row g-4 text-center bg-white shadow-lg p-5 rounded-5 border border-light">
+    <div class="col-6 col-md-3 border-end border-light">
+      <h3 class="fw-extrabold text-primary display-5 mb-1">45+</h3>
+      <p class="text-muted small mb-0 fw-medium">Premium Spaces</p>
+    </div>
+    <div class="col-6 col-md-3 col-md-3-md border-end border-light">
+      <h3 class="fw-extrabold text-success display-5 mb-1">1.2k</h3>
+      <p class="text-muted small mb-0 fw-medium">Active Members</p>
+    </div>
+    <div class="col-6 col-md-3 border-end border-light">
+      <h3 class="fw-extrabold text-warning display-5 mb-1">250+</h3>
+      <p class="text-muted small mb-0 fw-medium">Successful Workshops</p>
+    </div>
+    <div class="col-6 col-md-3">
+      <h3 class="fw-extrabold text-danger display-5 mb-1">99%</h3>
+      <p class="text-muted small mb-0 fw-medium">Satisfaction Rate</p>
+    </div>
+  </div>
+</div>
+
+<div class="container my-5 py-5">
+  <div class="d-flex justify-content-between align-items-end mb-5">
+    <div>
+      <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1.5 mb-2 fw-semibold">Workspace Fleet</span>
+      <h2 class="fw-extrabold text-dark display-6 m-0">Featured Spaces</h2>
+    </div>
+    <a routerLink="/workspaces" class="btn btn-link text-primary fw-bold text-decoration-none p-0">View All Spaces <i class="bi bi-arrow-right"></i></a>
+  </div>
+
+  <div class="row g-4">
+    @for (space of workSpaceService.workspaces().slice(0, 3); track space.id) {
+      <div class="col-12 col-md-4">
+        <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden home-card">
+          <div class="position-relative" style="height: 220px;">
+            <img [src]="space.imageUrl" class="w-100 h-100 object-fit-cover" [alt]="space.title">
+            <span class="badge bg-dark bg-opacity-75 text-white position-absolute top-0 start-0 m-3 rounded-pill px-3 py-1.5 small">{{ space.spaceType }}</span>
+          </div>
+          <div class="card-body p-4">
+            <h5 class="fw-bold text-dark text-truncate">{{ space.title }}</h5>
+            <p class="text-muted small mb-4 text-truncate-2">{{ space.description }}</p>
+            <div class="d-flex justify-content-between align-items-center mt-auto border-top pt-3">
+              <span class="text-primary fw-extrabold fs-5">${{ space.pricePerHour }}<span class="text-muted small font-normal">/hr</span></span>
+              @if(authService.currentUser()){
+               <button class="btn btn-outline-primary btn-sm rounded-pill px-3" [routerLink]="['/book', space.id]" >Book Now</button>
+
+              }@else {
+                <button class="btn btn-outline-secondary btn-sm rounded-pill px-3" [routerLink]="['/login']" (click)="showMessage()" >Login To Book</button>
+              }
+             
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- 3. ميزات المكان (Designed For Creators) -->
+<div class="bg-light py-5 my-5">
+  <div class="container py-4">
+    <div class="text-center mb-5">
+      <h2 class="fw-extrabold text-dark display-6">Designed For Creators & Professionals</h2>
+      <p class="text-muted">Everything you need to grow your business and focus on your ideas.</p>
+    </div>
+    <div class="row g-4 text-center">
+      <div class="col-md-4">
+        <div class="p-4 bg-white rounded-4 h-100 shadow-sm border-bottom border-3 border-primary">
+          <div class="fs-1 text-primary mb-3"><i class="bi bi-lightning-charge"></i></div>
+          <h5 class="fw-bold text-dark">Gigabit Wi-Fi</h5>
+          <p class="text-muted small mb-0">Ultra-fast fiber optic internet keeping you connected with zero interruptions or buffering.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-4 bg-white rounded-4 h-100 shadow-sm border-bottom border-3 border-success">
+          <div class="fs-1 text-success mb-3"><i class="bi bi-cup-hot"></i></div>
+          <h5 class="fw-bold text-dark">Premium Coffee & Tea</h5>
+          <p class="text-muted small mb-0">Unlimited access to locally roasted artisan coffee, organic teas, and refreshing filtered water.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-4 bg-white rounded-4 h-100 shadow-sm border-bottom border-3 border-warning">
+          <div class="fs-1 text-warning mb-3"><i class="bi bi-shield-check"></i></div>
+          <h5 class="fw-bold text-dark">12/7 Secure Access (8 AM - 8 PM)</h5>
+          <p class="text-muted small mb-0">Work whenever motivation strikes. Our advanced secure smart locks let you access the spaces safely anytime.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 4. (Upcoming Events) -->
+<div class="container my-5 py-5">
+  <div class="d-flex justify-content-between align-items-end mb-5">
+    <div>
+      <span class="badge bg-warning-subtle text-warning-emphasis rounded-pill px-3 py-1.5 mb-2 fw-semibold">Community Pulse</span>
+      <h2 class="fw-extrabold text-dark display-6 m-0">Join Our Upcoming Events</h2>
+    </div>
+    <a routerLink="/events" class="btn btn-link text-warning fw-bold text-decoration-none p-0">View All Events <i class="bi bi-arrow-right"></i></a>
+  </div>
+
+  <div class="row g-4">
+    @for (ev of eventService.events().slice(0, 3); track ev.id) {
+      @if (getEventDate(ev.eventDate) >= today) {
+        <div class="col-12 col-md-4">
+          <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden home-card position-relative bg-white">
+            <div class="position-absolute top-0 end-0 m-3 z-3 bg-white px-3 py-1 rounded-pill shadow-sm small fw-bold text-primary">
+              {{ ev.ticketPrice === 0 ? 'Free' : '$' + ev.ticketPrice }}
+            </div>
+            <div style="height: 180px;">
+              <img [src]="ev.imageUrl" class="w-100 h-100 object-fit-cover" [alt]="ev.title">
+            </div>
+            <div class="card-body p-4 d-flex flex-column justify-content-between">
+              <div>
+                <div class="text-secondary small mb-2"><i class="bi bi-calendar-event me-1 text-primary"></i> {{ ev.eventDate | date:'mediumDate' }}</div>
+                <h5 class="fw-bold text-dark text-truncate">{{ ev.title }}</h5>
+                <p class="text-muted small text-truncate-2">{{ ev.description }}</p>
+              </div>
+              <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
+                <span class="text-muted small"><i class="bi bi-people"></i> {{ ev.availableSeats }} seats left</span>
+                 @if(authService.currentUser()){
+               <button class="btn btn-primary btn-sm rounded-pill px-3" [routerLink]="['/event-book', ev.id]">Get Ticket</button>
+
+              }@else {
+                <button class="btn btn-outline-secondary btn-sm rounded-pill px-3" [routerLink]="['/login']" (click)="showMessage()" >Login To Get Ticket
+                  
+                </button>
+              }
+                
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>

@@ -3,6 +3,8 @@ using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace CoworkingSpace.DAL
@@ -139,6 +141,62 @@ namespace CoworkingSpace.DAL
                 command.CommandType = CommandType.StoredProcedure;
                 command.Parameters.AddWithValue("@Id", Id);
                 return await clsPrimaryFunctions.DeleteAsync(command);
+            }
+        }
+
+        public static async  Task<List<string>> GetBookedSlots(int spaceId, DateTime bookingDate)
+        {
+            using (SqlCommand command = new SqlCommand("Sp_GetBookedSlots"))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@SpaceId", spaceId);
+                command.Parameters.AddWithValue("@BookingDate", bookingDate);
+                using (var reader = await clsPrimaryFunctions.GetAsync(command))
+                {
+                    List<string> bookedSlots = new List<string>();
+                    while (reader.Read())
+                    {
+                        string startTime = reader["StartTime"] != DBNull.Value ? reader["StartTime"].ToString() : null;
+                        string endTime = reader["EndTime"] != DBNull.Value ? reader["EndTime"].ToString() : null;
+                        if (!string.IsNullOrEmpty(startTime) && !string.IsNullOrEmpty(endTime))
+                        {
+                            bookedSlots.Add($"{startTime} - {endTime}");
+                        }
+                    }
+                    return bookedSlots;
+                }
+            }
+        }
+
+        public static async Task<List<spaceBookingsModel>> getUserBooking(int id)
+        {
+            using (SqlCommand command = new SqlCommand("Sp_GetBookedUser"))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@UserId", id);
+                
+                using (var reader = await clsPrimaryFunctions.GetAsync(command))
+                {
+                    List<spaceBookingsModel> spaceBookingsList = new List<spaceBookingsModel>();
+                    while (reader.Read())
+                    {
+                        spaceBookingsList.Add(new spaceBookingsModel
+                        {
+                            Id = (int)reader["Id"],
+                            UserId = (int)reader["UserId"],
+                            SpaceId = (int)reader["SpaceId"],
+                            BookingDate = (DateTime)reader["BookingDate"],
+                            StartTime = reader["StartTime"] != DBNull.Value ? (string)reader["StartTime"].ToString() : null,
+                            EndTime = reader["EndTime"] != DBNull.Value ? (string)reader["EndTime"].ToString() : null,
+                            TotalPrice = (decimal)reader["TotalPrice"],
+                            BookingStatus = (string)reader["BookingStatus"],
+                            CreatedAt = (DateTime)reader["CreatedAt"],
+                            PaymentStatus = reader["PaymentStatus"] != DBNull.Value ? (string)reader["PaymentStatus"] : "Pending",
+                            TransactionId = reader["TransactionId"] != DBNull.Value ? (string)reader["TransactionId"] : null
+                        });
+                    }
+                    return spaceBookingsList;
+                }
             }
         }
     }

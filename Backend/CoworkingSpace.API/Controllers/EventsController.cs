@@ -88,15 +88,15 @@ namespace CoworkingSpace.API.Controllers
         }
 
         [HttpGet("get/{id}")]
-        public async Task<IActionResult> GetById(int Id)
+        public async Task<IActionResult> GetById(int id)
         {
             try
             {
-                if (Id == 0)
+                if (id == 0) 
                 {
                     return BadRequest("Event ID is required.");
                 }
-                var eventDetails = clsEvents.Find(Id);
+                var eventDetails = clsEvents.Find(id); 
                 if (eventDetails == null)
                 {
                     return NotFound("Event not found.");
@@ -105,10 +105,8 @@ namespace CoworkingSpace.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Error:During get the event details.");
+                return StatusCode(500, $"Error: {ex.Message}"); 
             }
-
-
         }
 
         [HttpPut("update/{id}")]

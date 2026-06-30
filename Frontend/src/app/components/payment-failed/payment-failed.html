@@ -1,0 +1,24 @@
+<div class="failed-page-wrapper d-flex align-items-center justify-content-center">
+  <div class="failed-card text-center p-5 shadow-lg animate__animated animate__fadeIn">
+    
+    <div class="icon-container mb-4">
+      <div class="error-ban-icon">
+        <i class="bi bi-credit-card-2-front bg-praimry"></i>
+        <div class="ban-line"></div>
+      </div>
+    </div>
+
+    <h2 class="status-title mb-3">Payment Canceled</h2>
+    <p class="status-description px-3">
+      Your payment session was closed. The reserved time slot has been 
+      <strong>automatically released</strong> back to the schedule.
+    </p>
+
+    <div class="action-section mt-4 pt-2">
+      <button class="btn btn-booking rounded-pill px-4 py-2" (click)="goToBooking()">
+        <i class="bi bi-calendar-arrow-left me-2"></i>Back to Booking
+      </button>
+    </div>
+    
+  </div>
+</div>

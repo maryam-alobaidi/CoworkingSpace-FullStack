@@ -1,0 +1,42 @@
+.event-card {
+  border-radius: 20px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
+    
+    .event-img {
+      transform: scale(1.06);
+    }
+  }
+}
+
+.event-img {
+  transition: transform 0.5s ease;
+}
+
+
+.text-truncate-2 {
+  overflow: hidden;
+  height: 54px; 
+  line-clamp: 2; 
+
+
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2; 
+}
+
+.card-description {
+  overflow: hidden;
+  height: 60px;
+  
+
+  line-clamp: 3; 
+
+
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3; 
+}

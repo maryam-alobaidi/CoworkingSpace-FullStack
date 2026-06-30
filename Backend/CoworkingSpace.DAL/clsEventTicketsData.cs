@@ -70,7 +70,6 @@ namespace CoworkingSpace.DAL
                             TicketCode = (string)reader["TicketCode"],
                             PurchaseDate = (DateTime)reader["PurchaseDate"],
 
-                         
                             PaymentStatus = reader["PaymentStatus"] != DBNull.Value ? (string)reader["PaymentStatus"] : null,
                             TransactionId = reader["TransactionId"] != DBNull.Value ? (string)reader["TransactionId"] : null
                         });
@@ -80,7 +79,6 @@ namespace CoworkingSpace.DAL
             }
         }
 
-        // Replace 'clsEventTickets' with 'eventTicketModel' in the FindByID method signature and return type
         public static async Task<eventTicketModel> FindByID(int Id, eventTicketModel model)
         {
             using (SqlConnection connection = new SqlConnection(clsPrimaryFunctions.connectionString))
@@ -122,6 +120,42 @@ namespace CoworkingSpace.DAL
                 command.CommandType = CommandType.StoredProcedure;
                 command.Parameters.AddWithValue("@Id", Id);
                 return await clsPrimaryFunctions.DeleteAsync(command);
+            }
+        }
+
+        // 🌟 الدالة الأخيرة المحدثة والمكتملة لعمل الـ INNER JOIN الذكي 🌟
+        public static async Task<List<eventTicketModel>> GetTicketsByUserId(int userId)
+        {
+            using (SqlCommand command = new SqlCommand("Sp_GetEventTicketsByUserId"))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@UserId", userId);
+
+                using (var reader = await clsPrimaryFunctions.GetAsync(command))
+                {
+                    List<eventTicketModel> userTicketsList = new List<eventTicketModel>();
+
+                    while (reader.Read())
+                    {
+                        userTicketsList.Add(new eventTicketModel
+                        {
+                            Id = (int)reader["Id"],
+                            EventId = (int)reader["EventId"],
+                            UserId = (int)reader["UserId"],
+                            TicketCode = (string)reader["TicketCode"],
+                            PurchaseDate = (DateTime)reader["PurchaseDate"],
+
+                            
+                            PaymentStatus = reader["PaymentStatus"] != DBNull.Value ? (string)reader["PaymentStatus"] : null,
+                            TransactionId = reader["TransactionId"] != DBNull.Value ? (string)reader["TransactionId"] : null,
+
+                            // الحقول الجديدة القادمة من الـ INNER JOIN مع جدول الفعاليات
+                            EventTitle = reader["EventTitle"] != DBNull.Value ? (string)reader["EventTitle"] : null,
+                            TotalPrice = reader["TicketPrice"] != DBNull.Value ? Convert.ToDecimal(reader["TicketPrice"]) : null
+                        });
+                    }
+                    return userTicketsList;
+                }
             }
         }
     }

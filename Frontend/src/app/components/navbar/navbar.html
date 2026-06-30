@@ -1,0 +1,156 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center" href="#">
+      <h1 class="vantage-logo text-dark fw-bold m-0 me-2">VANTAGE</h1>
+      <i class="fa-solid fa-crown silver-crown"></i>
+    </a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav mx-auto">
+        <li class="nav-item">
+          <a class="nav-link fw-extrabold" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link fw-extrabold" routerLink="/workspace" routerLinkActive="active">Workspaces</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link fw-extrabold" routerLink="/events" routerLinkActive="active">Events</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link fw-extrabold" routerLink="/about" routerLinkActive="active">About</a>
+        </li>
+
+        @if(authService.currentUser()){
+          <li class="nav-item dropdown">
+            <a href="#" class="nav-link fw-medium dropdown-toggle fw-bold text-secondary" id="historyDropdown" role="button" data-bs-toggle="dropdown">My Activity</a>
+            <ul class="dropdown-menu border-0 shadow-sm rounded-3">
+              <li><a class="dropdown-item" routerLink="/dashboard/office-bookings">Office Bookings</a></li>
+              <li><a class="dropdown-item" routerLink="/dashboard/event-tickets">Event Tickets</a></li>
+            </ul>
+          </li>
+        }
+      </ul>
+
+      <div class="d-flex align-items-center gap-2">
+        @if(authService.currentUser()){
+          <div class="d-flex align-items-center gap-2">
+            <span class="text-muted fw-medium ms-2 me-1">
+              Welcome dear, <strong class="text-primary">{{ authService.currentUser()?.userInfo?.fullName }}</strong> 👋
+            </span>
+              <!-- //notification -->
+              
+            <div class="dropdown me-2">
+              <button class="btn btn-light rounded-circle p-2 position-relative shadow-none border-0" type="button" id="notificationDropdown" data-bs-toggle="dropdown">
+                <i class="fa-solid fa-bell fs-5 text-secondary"></i>
+
+                @if(notificationService.unReadCount()>0){
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow-sm small">
+                 {{ notificationService.unReadCount() }}
+               </span>
+              }
+              </button>
+
+              <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-4 p-0 overflow-hidden" style="min-width: 300px; background-color: #1a1b1f;" aria-labelledby="notificationDropdown">
+                <li>
+                  <div class="d-flex justify-content-between align-items-center p-3 border-bottom border-secondary border-opacity-25">
+                    <h6 class="text-white fw-bold m-0 fs-5">Notifications</h6>
+                  </div>
+                </li>
+               @if (notificationService.notifications().length === 0) {
+                <li>
+                  <div class="p-4 text-center text-white-50 small">
+                    No notifications yet 📥
+                  </div>
+                </li>}@else {
+
+                 @for(notify of notificationService.notifications(); track notify.notificationID){
+         <li>
+          <a class="dropdown-item p-3 d-flex align-items-center gap-3" [routerLink]="notify.targetURL?? '/dashboard/office-bookings'"
+            (click)="handleNotificationClick(notify)"
+            [style.background-color]="notify.isRead? 'transparent' : 'rgba(13, 110, 253, 0.05)'"
+            style="border-bottom: 1px solid rgba(255, 255, 255, 0.03); white-space: normal;">
+
+           <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle" style="width: 40px; height: 40px;">
+
+             @if(notify.notificationType === 'SpaceBooking'){
+               <div class="w-100 h-100 rounded-circle d-flex align-items-center justify-content-center" style="background-color: rgba(13, 110, 253, 0.15); color: #0d6efd;">
+                 <i class="fa-solid fa-building fs-5"></i>
+               </div>
+             }
+
+             @else if(notify.notificationType === 'EventTicket'){
+               <div class="w-100 h-100 rounded-circle d-flex align-items-center justify-content-center" style="background-color: rgba(239, 111, 108, 0.15); color: #ef6f6c;">
+                 <i class="fa-solid fa-ticket fs-5"></i>
+               </div>
+             }
+
+             @else {
+               <div class="w-100 h-100 rounded-circle d-flex align-items-center justify-content-center" style="background-color: rgba(255, 255, 255, 0.1); color: #fff;">
+                 <i class="fa-solid fa-bell fs-5"></i>
+               </div>
+             }
+           </div>
+         
+           <div class="flex-grow-1">
+             <p class="text-white fw-semibold m-0 mb-1 small d-flex align-items-center gap-2">
+               {{notify.title}}
+               @if(!notify.isRead){
+                 <span style="width: 6px; height: 6px; background-color: #0d6efd; border-radius: 50%; display: inline-block;"></span>
+               }
+             </p>
+             <p class="text-white-50 small m-0" style="font-size: 12px; line-height: 1.4;">{{ notify.message }}</p>
+             <span class="text-muted d-block mt-1" style="font-size: 10px;">{{ notify.createdAt | date:'shortTime' }}</span>
+           </div>
+         </a>
+       </li>
+      }
+                     }
+                   </ul>
+                 </div>
+               
+                 <div class="dropdown me-1">
+              <button class="btn dropdown-toggle p-0 border-0 shadow-none d-flex align-items-center" 
+                      type="button" 
+                      id="userProfileDropdown" 
+                      data-bs-toggle="dropdown">
+                <div class="rounded-circle d-flex align-items-center justify-content-center"
+                     [style.backgroundColor]="userColor"
+                     [style.border]="'2px solid ' + borderColor"
+                     style="width: 48px; height: 48px; color: white; font-weight: normal; font-size: 20px;">
+                  {{ userInitial()}}
+                </div>
+              </button>
+
+              <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-4 p-0 overflow-hidden" style="min-width: 220px; background-color: #1a1b1f;">
+                <li>
+                  <div class="d-flex align-items-center p-3 gap-3 border-bottom border-secondary border-opacity-25">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                         [style.backgroundColor]="userColor"
+                         [style.border]="'1px solid ' + borderColor"
+                         style="width: 48px; height: 48px; color: white; font-weight: normal; font-size: 20px;">
+                      {{userInitial()}}
+                    </div>
+                    <div>
+                      <p class="text-white fw-normal m-0 fs-6 text-truncate">{{ authService.currentUser()?.userInfo?.fullName }}</p>
+                      <p class="text-white-50 fw-normal small m-0 text-truncate">User Profile</p>
+                    </div>
+                  </div>
+                </li>
+                <li><a class="dropdown-item p-3 text-white fw-normal d-flex align-items-center gap-3" routerLink="/profile"><i class="fa-solid fa-circle-user text-primary fs-5"></i> View Profile</a></li>
+                <li><a class="dropdown-item p-3 text-white fw-normal d-flex align-items-center gap-3" routerLink="/edit-profile"><i class="fa-solid fa-user-edit text-primary fs-5"></i> Edit Profile</a></li>
+                <li><button (click)="handleLogout()" class="dropdown-item p-3 text-danger fw-normal d-flex align-items-center gap-3" routerLink="/" routerLinkActive="active"><i class="fa-solid fa-right-from-bracket text-danger fs-5"></i> Logout</button></li>
+              </ul>
+            </div>
+          </div>
+        }@else {
+          <button class="btn btn-outline-primary btn-sm rounded-pill px-4" routerLink="/login" routerLinkActive="active">Login</button>
+          <button class="btn btn-primary btn-sm rounded-pill px-4" routerLink="/register" routerLinkActive="active">Sign Up</button>
+        }
+      </div>
+    </div>
+  </div>
+</nav>

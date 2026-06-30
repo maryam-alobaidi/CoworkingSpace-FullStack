@@ -1,0 +1,112 @@
+// خلفية الصفحة الأساسية بتأثير زجاجي فاخر ومتناسق مع الوضع الداكن
+.booking-time {
+    background: rgba(15, 15, 18, 0.7);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 24px; // حواف دائرية ناعمة جداً للمستطيل الرئيسي
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    padding: 2rem;
+}
+
+.time-chip {
+  &.slot-past {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    color: rgba(255, 255, 255, 0.2) !important;
+    border: 1px dashed rgba(255, 255, 255, 0.1) !important;
+    cursor: not-allowed !important;
+    opacity: 0.6;
+  }
+}
+
+// التنسيق الأساسي لأزرار الوقت (العصرية تعتمد على البساطة والاتساع)
+.time-chip {
+    font-weight: 500;
+    font-size: 0.88rem;
+    letter-spacing: 0.5px;
+    padding: 12px 18px;
+    border-radius: 14px; // حواف ناعمة لكل زر
+    border: 1.5px solid transparent !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); // أنيميشن احترافي وسلس
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+// 1. حالة الوقت المتاح (تصميم نظيف بحدود مضيئة بدون خلفية ثقيلة)
+.slot-available {
+    border-color: rgba(46, 196, 182, 0.15) !important; 
+    color: #a3e2dc !important;
+    background-color: rgba(46, 196, 182, 0.03);
+
+    &:hover {
+        background-color: rgba(46, 196, 182, 0.12) !important;
+        border-color: #2ec4b6 !important;
+        color: #2ec4b6 !important;
+        transform: translateY(-3px); // تأثير ارتفاع طفيف لأعلى عند الماوس
+        box-shadow: 0 8px 20px rgba(46, 196, 182, 0.15);
+    }
+}
+
+// 2. حالة الوقت المحجوز (راقي ومطفأ، لا يشتت العين بالأحمر الفاقع)
+.slot-booked {
+    border-color: rgba(230, 57, 70, 0.1) !important;
+    color: rgba(255, 255, 255, 0.3) !important; // جعل الخط باهت لأنه غير متاح
+    background-color: rgba(230, 57, 70, 0.05) !important;
+    text-decoration: line-through; // خط في المنتصف لإيحاء فوري بالإغلاق
+    opacity: 0.7;
+    cursor: not-allowed;
+    position: relative;
+    
+    // إضافة نقطة حمراء صغيرة تدل على أنه محجوز بدلاً من تلوين الزر كله
+    &::after {
+        content: '';
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        width: 6px;
+        height: 6px;
+        background-color: #e63946;
+        border-radius: 50%;
+    }
+}
+
+// 3. حالة الوقت المختار (توهج النيون الأزرق العصري المستوحى من الـ Cyberpunk)
+.slot-selected {
+    border-color: #00b4d8 !important;
+    background: linear-gradient(135deg, #0077b6 0%, #00b4d8 100%) !important;
+    color: #ffffff !important;
+    font-weight: 600;
+    transform: scale(1.02); // تكبير حجم الزر المختار بشكل بسيط جداً
+    box-shadow: 0 10px 25px rgba(0, 180, 216, 0.35);
+}
+
+// تنسيق حقل التقويم (إدخال التاريخ بشكل يطابق أفخم قوالب التصميم)
+.date-picker-input {
+    color-scheme: dark; 
+    border-radius: 0 14px 14px 0 !important;
+    background-color: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
+    padding: 12px 16px;
+    font-weight: 400;
+    transition: all 0.3s ease;
+    
+    &:focus {
+        background-color: rgba(255, 255, 255, 0.06) !important;
+        border-color: #00b4d8 !important;
+        box-shadow: 0 0 15px rgba(0, 180, 216, 0.2);
+    }
+}
+
+// الأيقونة المرافقة لمدخل التاريخ
+.input-group-text {
+    border-radius: 14px 0 0 14px !important;
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-edge: none;
+    color: rgba(255, 255, 255, 0.6) !important;
+    padding-left: 18px;
+    padding-right: 18px;
+}

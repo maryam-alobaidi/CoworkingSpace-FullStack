@@ -1,0 +1,191 @@
+<div class="container py-5">
+  
+  <div class="row mb-5 border-bottom pb-3 align-items-center">
+    <div class="col-md-8">
+      <h2 class="fw-bold text-dark mb-1">My Booked Spaces</h2>
+      <p class="text-muted mb-0">Manage, track, and review all your office and co-working space reservations at Vantage.</p>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="row justify-content-center my-5">
+      <div class="col-auto text-center py-5">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="text-muted mt-3 fw-medium">Fetching your bookings, please wait...</p>
+      </div>
+    </div>
+  }
+  @else {
+    
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      
+      @for (item of booking(); track item.id) {
+        <div class="col">
+          <div class="card h-100 shadow-sm border-0 border-top border-4 rounded-3 transition-hover"
+               [ngClass]="item.isUpcoming ? 'border-success bg-gradient-active' : 'border-danger bg-gradient-past'">
+            
+            <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center pt-3 px-3">
+              <span class="text-secondary small fw-semibold">ID: #{{ item.id }}</span>
+              <span class="badge rounded-pill px-3 py-2 fw-bold"
+                    [ngClass]="item.isUpcoming ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'">
+                {{ item.isUpcoming ? '🟢 Active' : '🔴 Past' }}
+              </span>
+            </div>
+
+            <div class="card-body px-3 py-2">
+              <div class="d-flex align-items-center mb-4">
+                <div class="p-2 bg-light rounded-3 me-3 fs-4">🏢</div>
+                <h5 class="card-title fw-bold text-dark mb-0">Workspace Unit: {{ item.spaceId }}</h5>
+              </div>
+
+              <div class="list-group list-group-flush small">
+                <div class="list-group-item bg-transparent d-flex justify-content-between border-0 px-0 py-2">
+                  <span class="text-muted">Date:</span>
+                  <span class="fw-semibold text-dark">{{ item.bookingDate | date:'longDate' }}</span>
+                </div>
+                
+                <div class="list-group-item bg-transparent d-flex justify-content-between border-0 px-0 py-2">
+                  <span class="text-muted">Time Slot:</span>
+                  <span class="fw-semibold text-dark">{{ item.startTime }} - {{ item.endTime }}</span>
+                </div>
+
+                <div class="list-group-item bg-transparent d-flex justify-content-between border-0 px-0 py-2">
+                  <span class="text-muted">Payment:</span>
+                  <span class="fw-bold" 
+                        [ngClass]="item.paymentStatus === 'Completed' ? 'text-success' : 'text-danger'">
+                    {{ item.paymentStatus === 'Completed' ? 'Paid Successfully' : item.paymentStatus }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-footer bg-light border-0 d-flex justify-content-between align-items-center p-3 mt-auto">
+              <div>
+                <small class="text-uppercase text-muted d-block tracking-wider" style="font-size: 0.7rem;">Amount Paid</small>
+                <span class="fs-4 fw-bold text-dark">${{ item.totalPrice }}</span>
+              </div>
+              
+              <div class="actions-section d-flex gap-2">
+                
+                @if (item.paymentStatus === 'Pending' && item.isUpcoming) {
+                  <button (click)="goToChackOut(item.id)" class="btn btn-warning btn-sm px-3 py-2 fw-semibold text-dark rounded-2 d-flex align-items-center gap-1 shadow-sm">
+                    <span>💳</span> Pay Now
+                  </button>
+                }
+
+                @if (item.paymentStatus === 'Expired' || item.paymentStatus === 'Cancelled') {
+                  <button [routerLink]="['/book', item.spaceId]" class="btn btn-outline-danger btn-sm px-3 py-2 fw-semibold rounded-2 d-flex align-items-center gap-1">
+                    <span>❌</span> Expired - Rebook
+                  </button>
+                }
+
+                @if (!item.isUpcoming && item.paymentStatus === 'Completed') {
+                  <button [routerLink]="['/book', item.spaceId]" class="btn btn-primary btn-sm px-3 py-2 fw-semibold rounded-2 d-flex align-items-center gap-1">
+                    <span>🔄</span> Book Again
+                  </button>
+                }
+
+                @if (item.paymentStatus === 'Completed') {
+                  <button class="btn btn-outline-secondary btn-sm px-3 py-2 fw-semibold rounded-2"
+                          (click)="openReceipt(item)"
+                          data-bs-toggle="modal"
+                          data-bs-target="#receiptModal">
+                    View Receipt
+                  </button>
+                }
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+      }
+      
+      @empty {
+        <div class="col-12 text-center py-5">
+          <div class="card p-5 border-0 shadow-sm rounded-3 bg-white mx-auto" style="max-width: 500px; border: 1px dashed #dee2e6 !important;">
+            <div class="display-3 text-muted mb-3">📅</div>
+            <h4 class="fw-bold text-dark mb-2">No Bookings Found</h4>
+            <p class="text-muted mb-0">You haven't reserved any workspace yet. Explore Vantage's premium spaces and start your first booking!</p>
+          </div>
+        </div>
+      }
+
+    </div>
+
+  }
+</div>
+
+<div class="modal fade" id="receiptModal" tabindex="-1" aria-labelledby="receiptModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      
+      <div class="modal-header bg-light border-0 py-3">
+        <h5 class="modal-title fw-bold text-dark" id="receiptModalLabel">📄 Payment Receipt</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body p-4" id="receiptContent">
+        @if (selectedBooking()) {
+          <div class="text-center mb-4">
+            <h3 class="fw-bold tracking-wider text-primary mb-1">VANTAGE</h3>
+            <span class="text-muted small">Premium Co-working Spaces</span>
+            <div class="border-bottom my-3"></div>
+          </div>
+
+          <div class="row g-2 small mb-4">
+            <div class="col-6">
+              <span class="text-muted d-block">Receipt No:</span>
+              <span class="fw-bold text-dark">#INV-{{ selectedBooking().id }}</span>
+            </div>
+            <div class="col-6 text-end">
+              <span class="text-muted d-block">Payment Date:</span>
+              <span class="fw-bold text-dark">{{ selectedBooking().createdAt | date:'mediumDate' }}</span>
+            </div>
+            <div class="col-12 mt-2">
+              <span class="text-muted d-block">Transaction ID:</span>
+              <span class="text-secondary font-monospace">{{ selectedBooking().transactionId || 'N/A' }}</span>
+            </div>
+          </div>
+
+          <div class="bg-light p-3 rounded-3 mb-4">
+            <h6 class="fw-bold text-dark mb-2">Reservation Summary</h6>
+            <div class="d-flex justify-content-between small mb-1">
+              <span class="text-muted">Workspace:</span>
+              <span class="fw-semibold">Unit {{ selectedBooking().spaceId }}</span>
+            </div>
+            <div class="d-flex justify-content-between small mb-1">
+              <span class="text-muted">Booking Date:</span>
+              <span class="fw-semibold">{{ selectedBooking().bookingDate | date:'longDate' }}</span>
+            </div>
+            <div class="d-flex justify-content-between small">
+              <span class="text-muted">Duration:</span>
+              <span class="fw-semibold">{{ selectedBooking().startTime }} - {{ selectedBooking().endTime }}</span>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center border-top pt-3">
+            <div>
+              <span class="badge bg-success-subtle text-success px-3 py-2 fw-bold">✓ PAID</span>
+            </div>
+            <div class="text-end">
+              <span class="text-muted small d-block">Total Amount</span>
+              <span class="fs-3 fw-bold text-dark">${{ selectedBooking().totalPrice }}</span>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="modal-footer bg-light border-0">
+        <button type="button" class="btn btn-secondary rounded-2" data-bs-dismiss="modal">Close</button>
+        
+        <button type="button" (click)="printReceipt()" class="btn btn-primary rounded-2 fw-semibold">
+          🖨️ Print Receipt
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>

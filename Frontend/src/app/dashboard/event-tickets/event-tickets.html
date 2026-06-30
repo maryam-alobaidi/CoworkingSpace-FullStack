@@ -1,0 +1,100 @@
+<div class="container py-5">
+  
+  <div class="row mb-5 border-bottom pb-3 align-items-center">
+    <div class="col-md-8">
+      <h2 class="fw-bold text-dark mb-1">My Event Tickets</h2>
+      <p class="text-muted mb-0">Review, manage, and download all your booked event tickets at Vantage.</p>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="row justify-content-center my-5">
+      <div class="col-auto text-center py-5">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="text-muted mt-3 fw-medium">Fetching your tickets, please wait...</p>
+      </div>
+    </div>
+  }
+  @else {
+    
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      
+      @for (ticket of tickets(); track ticket.id) {
+        <div class="col">
+          <div class="card h-100 shadow-sm border-0 border-top border-4 rounded-3 rounded-top-3"
+               [ngClass]="ticket.paymentStatus === 'Completed' ? 'border-primary' : 'border-warning'">
+            
+            <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center pt-3 px-3">
+              <span class="text-secondary small fw-semibold">Ticket: #{{ ticket.id }}</span>
+              <span class="badge rounded-pill px-3 py-2 fw-bold"
+                    [ngClass]="ticket.paymentStatus === 'Completed' ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning'">
+                {{ ticket.paymentStatus === 'Completed' ? '🎟️ Valid' : '⏳ Pending' }}
+              </span>
+            </div>
+
+            <div class="card-body px-3 py-2">
+              <div class="d-flex align-items-center mb-4">
+                <div class="p-2 bg-light rounded-3 me-3 fs-4">🎭</div>
+                <h5 class="card-title fw-bold text-dark mb-0">{{ ticket.eventTitle || 'Vantage Special Event' }}</h5>
+              </div>
+
+              <div class="list-group list-group-flush small">
+                <div class="list-group-item bg-transparent d-flex justify-content-between border-0 px-0 py-2">
+                  <span class="text-muted">Event Date:</span>
+                  <span class="fw-semibold text-dark">{{ ticket.eventDate | date:'longDate' }}</span>
+                </div>
+                
+                <div class="list-group-item bg-transparent d-flex justify-content-between border-0 px-0 py-2">
+                  <span class="text-muted">Quantity:</span>
+                  <span class="fw-bold text-dark">{{ ticket.quantity || 1 }} Ticket(s)</span>
+                </div>
+
+                <div class="list-group-item bg-transparent d-flex justify-content-between border-0 px-0 py-2">
+                  <span class="text-muted">Payment Status:</span>
+                  <span class="fw-bold" [ngClass]="ticket.paymentStatus === 'Completed' ? 'text-success' : 'text-warning'">
+                    {{ ticket.paymentStatus === 'Completed' ? 'Paid' : 'Pending Payment' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-footer bg-light border-0 d-flex justify-content-between align-items-center p-3 mt-auto">
+              <div>
+                <small class="text-uppercase text-muted d-block tracking-wider" style="font-size: 0.7rem;">Total Cost</small>
+                <span class="fs-4 fw-bold text-dark">${{ ticket.totalPrice }}</span>
+              </div>
+              
+              <div class="actions-section">
+                @if (ticket.paymentStatus === 'Pending') {
+                  <button class="btn btn-warning btn-sm px-3 py-2 fw-semibold text-dark rounded-2 shadow-sm">
+                    💳 Pay Ticket
+                  </button>
+                }
+                @if (ticket.paymentStatus === 'Completed') {
+                  <button class="btn btn-outline-secondary btn-sm px-3 py-2 fw-semibold rounded-2">
+                    View Receipt
+                  </button>
+                }
+              </div>
+            </div>
+
+          </div>
+        </div>
+      }
+      
+      @empty {
+        <div class="col-12 text-center py-5">
+          <div class="card p-5 border-0 shadow-sm rounded-3 bg-white mx-auto" style="max-width: 500px; border: 1px dashed #dee2e6 !important;">
+            <div class="display-3 text-muted mb-3">🎟️</div>
+            <h4 class="fw-bold text-dark mb-2">No Tickets Bought</h4>
+            <p class="text-muted mb-0">You haven't registered for any events yet. Check out Vantage's upcoming premium events and book your seat now!</p>
+            <button routerLink="/events" class="btn btn-primary rounded-pill mt-4 px-4 py-2 small fw-semibold">Explore Events</button>
+          </div>
+        </div>
+      }
+
+    </div>
+  }
+</div>

@@ -21,5 +21,8 @@ namespace CoworkingSpace.Models
 
         // رقم العملية القادم من Stripe أو البنك
         public string? TransactionId { get; set; }
+
+        public string? EventTitle { get; set; }    
+        public decimal? TotalPrice { get; set; }  
     }
 }

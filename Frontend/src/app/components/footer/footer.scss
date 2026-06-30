@@ -1,0 +1,41 @@
+
+//mail
+.icon-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 35px;
+  height: 35px;
+  background-color: #e9ecef; 
+  border-radius: 50%;
+  color: #0d6efd;
+  margin-left: 10px;
+  transition: all 0.3s ease;
+}
+
+.icon-circle:hover {
+
+  background-color: #0d6efd;
+  color: white;
+  transform: translateY(-1px);
+}
+
+//Whatsapp
+.icon-circle-whatsapp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 35px;
+  height: 35px;
+  background-color: #e9ecef; 
+  border-radius: 50%;
+  margin-left: 10px;
+  color: #198754 ;
+  transition: all 0.3s ease;
+}
+
+.icon-circle-whatsapp:hover {
+  transform: translateY(-1px);
+  background-color:#198754;
+  color: white !important;
+}

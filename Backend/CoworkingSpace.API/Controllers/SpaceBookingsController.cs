@@ -2,19 +2,23 @@
 using CoworkingSpace.BLL.Interfaces;
 using CoworkingSpace.Models;
 using Microsoft.AspNetCore.Mvc;
+using Stripe;
+using System.Collections.Generic;
 
 namespace CoworkingSpace.API.Controllers
 {
+    [Route("api/SpaceBookings")] 
+    [ApiController]
     public class SpaceBookingsController : Controller
     {
 
         private readonly IEmailService _emailService;
+        
 
         public SpaceBookingsController(IEmailService emailService)
         {
             _emailService = emailService;
         }
-
 
         [HttpPost("add")]
         public async Task<IActionResult> Add([FromBody] CreateSpaceBookingModel model)
@@ -29,10 +33,7 @@ namespace CoworkingSpace.API.Controllers
                 var space = await clsWorkspaceSpaces.Find(model.SpaceId);
                 if (space == null) return NotFound("Space not found.");
 
-
-
                 decimal pricePerHour = space.PricePerHour;
-
                 var start = TimeSpan.Parse(model.StartTime);
                 var end = TimeSpan.Parse(model.EndTime);
                 decimal hours = (decimal)(end - start).TotalHours;
@@ -46,21 +47,59 @@ namespace CoworkingSpace.API.Controllers
                     StartTime = model.StartTime,
                     EndTime = model.EndTime,
                     TotalPrice = calculatedPrice,
-                    BookingStatus = "Pending", 
+                    BookingStatus = "Pending",
                     PaymentStatus = "Pending",
                     CreatedAt = DateTime.Now
                 };
 
-                
                 if (await spaceBookings.Save())
                 {
                   
+
+                    var options = new Stripe.Checkout.SessionCreateOptions
+                    {
+                        PaymentMethodTypes = new List<string> { "card" },
+                        LineItems = new List<Stripe.Checkout.SessionLineItemOptions>
+                    {
+                    new Stripe.Checkout.SessionLineItemOptions
+                    {
+                        PriceData = new Stripe.Checkout.SessionLineItemPriceDataOptions
+                        {
+                            UnitAmount = (long)(spaceBookings.TotalPrice * 100), // in centat
+                            Currency = "usd",
+                            
+                            
+                            ProductData = new()
+                            {
+                                Name = $"Workspace Booking #{spaceBookings.Id}",
+                                Description = $"Date: {spaceBookings.BookingDate:yyyy-MM-dd}"
+                            },
+                            },
+                        Quantity = 1,
+                    },
+                },
+                        Mode = "payment",
+                        // 🌟 هنا السحر! نخبر Stripe عندما ينجح العميل في الدفع، أعده تلقائياً إلى هذا الرابط في الأنجولار
+                        SuccessUrl = "http://localhost:4200/payment-success?bookingId=" + spaceBookings.Id,
+                        CancelUrl = "http://localhost:4200/payment-failed?bookingId=" + spaceBookings.Id,
+
+                        Metadata = new Dictionary<string, string>
+                {
+                    { "Type", "Space" },
+                    { "BookingId", spaceBookings.Id.ToString() }
+                }
+                    };
+
+                    var service = new Stripe.Checkout.SessionService();
+                    Stripe.Checkout.Session session = await service.CreateAsync(options);
+
                     return Ok(new
                     {
                         BookingId = spaceBookings.Id,
                         Amount = spaceBookings.TotalPrice,
                         ReferenceType = "Space",
-                        Message = "Booking created, awaiting payment."
+                        SessionUrl = session.Url, // الرابط جاهز لينطلق للأنجولار
+                        Message = "Booking created, redirecting to payment."
                     });
                 }
 
@@ -125,7 +164,7 @@ namespace CoworkingSpace.API.Controllers
                 {
                     return BadRequest("Bookingc Ticket ID is required.");
                 }
-                var bookingTicketDetails =  clsSpaceBookings.Find(Id);
+                var bookingTicketDetails = clsSpaceBookings.Find(Id);
                 if (bookingTicketDetails == null)
                 {
                     return NotFound("Booking Ticket not found.");
@@ -150,7 +189,7 @@ namespace CoworkingSpace.API.Controllers
                     return BadRequest("Booking Ticket ID and data are required.");
                 }
                 model.SpaceId = id;
-                var existingBookingTicket =  clsSpaceBookings.Find(id);
+                var existingBookingTicket = clsSpaceBookings.Find(id);
                 if (existingBookingTicket == null)
                 {
                     return NotFound("Booking Ticket not found.");
@@ -178,6 +217,117 @@ namespace CoworkingSpace.API.Controllers
             }
 
 
+        }
+
+        [HttpGet("GetBookedSlots")]
+        public async Task<IActionResult> GetBookedSlots(int spaceId, DateTime bookingDate)
+        {
+            try
+            {
+                if (spaceId <= 0)
+                {
+                    return BadRequest("Space ID is required.");
+                }
+                var bookedSlots = await clsSpaceBookings.GetBookedSlots(spaceId, bookingDate);
+                return Ok(bookedSlots);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Error: During fetching booked slots.");
+            }
+        }
+
+
+        [HttpGet("user/{id}")]
+        public async Task<IActionResult> GetUserBookings(int id)
+        {
+            try
+            {
+               
+                if (id <= 0)
+                {
+                    return BadRequest("Valid User ID is required.");
+                }
+
+
+                List <spaceBookingsModel> bookings = await clsSpaceBookings.getUserBooking(id);
+
+                
+                if (bookings == null || !bookings.Any())
+                {
+                    return Ok(new List<spaceBookingsModel>()); 
+                }
+
+                
+                return Ok(bookings);
+            }
+            catch (Exception ex)
+            {
+               
+               
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+
+        [HttpPost("repay/{Id}")]
+        public async Task<IActionResult> Repay(int Id)
+        {
+            try
+            {
+                var spaceBooking = clsSpaceBookings.Find(Id);
+                if (spaceBooking==null)
+                {
+                    return NotFound("Id not found.");
+                }
+
+
+                if (spaceBooking.PaymentStatus != "Pending")
+                {
+                    return BadRequest("This booking cannot be paid.");
+
+                }
+
+                var options = new Stripe.Checkout.SessionCreateOptions
+                {
+                    PaymentMethodTypes = new List<string> { "card" },
+                    LineItems = new List<Stripe.Checkout.SessionLineItemOptions>
+            {
+                new Stripe.Checkout.SessionLineItemOptions
+                {
+                    PriceData = new Stripe.Checkout.SessionLineItemPriceDataOptions
+                    {
+                        UnitAmount = (long)(spaceBooking.TotalPrice * 100), 
+                        Currency = "usd",
+                        ProductData = new()
+                        {
+                            Name = $"Workspace Booking #{spaceBooking.Id} (Repayment)",
+                            Description = $"Date: {spaceBooking.BookingDate:yyyy-MM-dd}"
+                        },
+                    },
+                    Quantity = 1,
+                },
+            },
+                    Mode = "payment",
+                    SuccessUrl = "http://localhost:4200/payment-success?bookingId=" + spaceBooking.Id,
+                    CancelUrl = "http://localhost:4200/payment-failed?bookingId=" + spaceBooking.Id,
+                    Metadata = new Dictionary<string, string>
+            {
+                { "Type", "Space" },
+                { "BookingId", spaceBooking.Id.ToString() }
+            }
+                };
+
+                var service = new Stripe.Checkout.SessionService();
+                Stripe.Checkout.Session session = await service.CreateAsync(options);
+
+                
+                return Ok(new { SessionUrl = session.Url });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error: {ex.Message}");
+            }
         }
 
     }

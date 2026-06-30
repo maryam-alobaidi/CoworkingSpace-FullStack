@@ -1,0 +1,72 @@
+.failed-page-wrapper {
+  min-height: 80vh;
+  background: radial-gradient(circle, #fafafa 0%, #f1f3f5 100%);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.failed-card {
+  background: #ffffff;
+  border-radius: 24px;
+  max-width: 500px;
+  width: 90%;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+ 
+
+
+}
+
+// تصميم الأيقونة المبتكرة يدوياً بدون صور خارجية
+.icon-container {
+  display: flex;
+  justify-content: center;
+  
+  .error-ban-icon {
+    position: relative;
+    font-size: 70px;
+    color: #c62828; // لون أحمر ناعم ومريح للعين
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffebee;
+    border-radius: 50%;
+    
+    .ban-line {
+      position: absolute;
+      width: 80px;
+      height: 4px;
+      background-color: #ef5350;
+      transform: rotate(-45deg);
+      border-radius: 2px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+  }
+}
+
+.status-title {
+  color: #c62828;
+  font-weight: 700;
+  font-size: 1.8rem;
+}
+
+.status-description {
+  color: #5c677d;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  
+  strong {
+    color: #1e3a8a; // الأزرق الاحترافي الخاص ببرنامجك
+  }
+}
+
+// تصميم الزر الأزرق المتناسق مع تطبيقك
+.btn-booking {
+  background: linear-gradient(135deg, #1e3a8a 0%, #0d6efd 100%);
+  color: #ffffff;
+  font-weight: 600;
+  border: none;
+  box-shadow: 0 4px 15px rgba(13, 110, 253, 0.2);
+  transition: all 0.3s ease;
+
+}

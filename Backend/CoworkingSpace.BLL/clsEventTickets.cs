@@ -22,7 +22,6 @@ namespace CoworkingSpace.BLL
         public string TicketCode { get; set; }
         public DateTime PurchaseDate { get; set; }
 
-        // الخصائص الجديدة المرتبطة بالدفع (يجب إضافتها للموديل أيضاً)
         public string PaymentStatus { get; set; }
         public string? TransactionId { get; set; }
 
@@ -33,7 +32,7 @@ namespace CoworkingSpace.BLL
             this.UserId = -1;
             this.TicketCode = GenerateUniqueTicketCode();
             this.PurchaseDate = DateTime.Now;
-            this.PaymentStatus = "Pending"; // الحالة الافتراضية عند الحجز
+            this.PaymentStatus = "Pending"; 
             this.Mode = enMode.addNew;
         }
 
@@ -169,23 +168,23 @@ namespace CoworkingSpace.BLL
 
         private string _GenerateEmailTemplate(string userName, clsEvents eventDetails)
         {
-            // Design Configuration
-            string primaryColor = "#4F46E5"; // Indigo Modern
-            string secondaryColor = "#111827"; // Dark Gray
-            string accentColor = "#6366F1"; // Light Indigo
+
+            string primaryColor = "#11141a";
+            string secondaryColor = "#0d6efd";
+
 
             return $@"
-    <div style='font-family: ""Inter"", ""Segoe UI"", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7fa; padding: 40px 20px; line-height: 1.6; direction: ltr; text-align: left;'>
+    <div style='font-family: ""Segoe UI"", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f6f9; padding: 40px 20px; line-height: 1.6; direction: ltr; text-align: left;'>
         <div style='max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05);'>
             
-            <div style='background: linear-gradient(135deg, {primaryColor} 0%, {accentColor} 100%); padding: 40px 30px; text-align: center; color: #ffffff;'>
+            <div style='background-color: {primaryColor};  padding: 40px 30px; text-align: center; color: #ffffff; border-bottom: 5px solid {secondaryColor};'>
                 <div style='font-size: 50px; margin-bottom: 10px;'>🎟️</div>
                 <h1 style='margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.5px;'>Your Ticket is Ready!</h1>
-                <p style='margin-top: 10px; opacity: 0.9; font-size: 16px;'>We're excited to have you join us.</p>
+                <p style='margin-top: 10px; font-size: 16px;'>VANTAGE COWORKING SPACE 👑</p>
             </div>
 
             <div style='padding: 40px 35px;'>
-                <p style='font-size: 18px; color: {secondaryColor}; margin-bottom: 20px;'>Hi <strong>{userName}</strong>,</p>
+                <p style='font-size: 18px; color: {secondaryColor}; margin-bottom: 20px;'>Hi <strong>{userName}</strong> 👋,</p>
                 <p style='color: #4b5563; font-size: 15px;'>Great news! Your booking has been confirmed. Below are your official ticket details. Please keep this email handy for check-in.</p>
 
                 <div style='background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 25px; margin: 30px 0; position: relative;'>
@@ -206,23 +205,20 @@ namespace CoworkingSpace.BLL
                         </table>
                     </div>
                 </div>
-
-             
             </div>
 
-                  <div> style='background-color: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #f3f4f6;'>
-                <p style='margin: 0; font-size: 13px; color: #6b7280;'>
-                   Refrence ID: {this.Id} <br>
-                     </div>
-
-            <div style='background-color: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #f3f4f6;'>
-                <p style='margin: 0; font-size: 13px; color: #6b7280;'>
-                    Need help? <a href=""mailto:maryamalobaidi107@gmail.com"" style=""color: #4F46E5; text-decoration: none;"">Contact Support</a><br><br>
-                    <strong>CoworkSpace Team</strong><br>
-                    123 Innovation Way, Tech City, 2026<br>
-                    <span style='color: #9ca3af; font-size: 11px; margin-top: 10px; display: block;'>&copy; 2026 CoworkSpace Inc. All rights reserved.</span>
+            <div style='background-color: #11141a; padding: 30px; text-align: center; color: #a0a5b0; border-top: 1px solid #22252a;'>
+                <p style='margin: 0 0 10px 0; font-size: 13px; color: #9ca3af;'>
+                    Reference ID: <span style='color: #ffffff; font-weight: bold;'>{this.Id}</span>
+                </p>
+                <p style='margin: 0; font-size: 13px; color: #a0a5b0;'>
+                    Need help? <a href=""mailto:maryamalobaidi107@gmail.com"" style=""color: {primaryColor}; text-decoration: none; font-weight: bold;"">Contact Support</a><br><br>
+                    <strong>Vantage Coworking Team</strong><br>
+                    <span style='color: {primaryColor}; font-weight: 600;'>Where Inspiration Meets Productivity</span><br>
+                    <span style='color: #6b7280; font-size: 11px; margin-top: 15px; display: block;'>&copy; {DateTime.Now.Year} Vantage Space Inc. All rights reserved.</span>
                 </p>
             </div>
+
         </div>
     </div>";
         }
@@ -230,6 +226,12 @@ namespace CoworkingSpace.BLL
         public static async Task<bool> Delete(int Id)
         {
             return await clsEventTicketsData.DeleteEventTickets(Id);
+        }
+
+
+        public static async Task<List<eventTicketModel>> GetTicketsByUserId(int UserId)
+        {
+            return await clsEventTicketsData.GetTicketsByUserId(UserId);
         }
     }
 }

@@ -1,0 +1,98 @@
+<div class="container mt-2 mb-5">
+  @if (eventDetails(); as details) {
+    <div class="row g-5 justify-content-center align-items-stretch">
+      
+      <div class="col-12 col-lg-6">
+        <div class="image-showcase-wrapper rounded-4 shadow-lg overflow-hidden h-100 position-relative animate__animated animate__fadeInLeft" style="min-height: 400px;">
+          <div class="position-absolute top-0 end-0 m-4 z-3 bg-white px-4 py-2 rounded-pill shadow">
+            @if (details.ticketPrice === 0) {
+              <span class="text-success fw-bold text-uppercase">Free</span>
+            } @else {
+              <span class="text-primary fw-extrabold fs-4">${{ details.ticketPrice }}</span>
+            }
+          </div>
+          
+          <img [src]="details.imageUrl" class="w-100 h-100 object-fit-cover" [alt]="details.title">
+          <div class="position-absolute bottom-0 start-0 w-100 p-4 bg-gradient-to-t text-white" style="background: linear-gradient(transparent, rgba(0,0,0,0.8));">
+            <span class="badge bg-warning text-dark mb-2 fw-bold tracking-wider text-uppercase">Premium Workshop</span>
+            <h3 class="fw-bold mb-0">{{ details.title }}</h3>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-6">
+        <div class="card booking-action-card h-100 border-0 shadow-lg rounded-4 p-4 p-md-5 bg-white animate__animated animate__fadeInRight d-flex flex-column justify-content-between">
+          
+          <div>
+            <div class="d-flex align-items-center gap-2 mb-3 text-secondary small">
+              <i class="bi bi-calendar3 text-primary fs-5"></i>
+              <span class="fw-bold fs-6">{{ details.eventDate | date:'fullDate' }}</span>
+            </div>
+
+            <h2 class="fw-extrabold text-dark mb-3">{{ details.title }}</h2>
+            <p class="text-muted mb-4 lh-relaxed">{{ details.description }}</p>
+            
+            <hr class="text-muted opacity-25 my-4">
+
+            <div class="mb-4 bg-light p-3 rounded-3">
+              <div class="d-flex justify-content-between align-items-center mb-2 small">
+                <span class="text-secondary fw-medium">Availability Status:</span>
+                <span class="fw-extrabold" [ngClass]="details.availableSeats < 10 ? 'text-danger' : 'text-success'">
+                  {{ details.availableSeats }} / {{ details.maxAttendees }} Seats Left
+                </span>
+              </div>
+              <div class="progress rounded-pill" style="height: 8px;">
+                <div class="progress-bar rounded-pill" 
+                     [ngClass]="details.availableSeats < 10 ? 'bg-danger' : 'bg-primary'"
+                     role="progressbar" 
+                     [style.width.%]="(details.availableSeats / details.maxAttendees) * 100">
+                </div>
+              </div>
+            </div>
+
+            @if (details.availableSeats > 0) {
+              <div class="mb-4 text-center text-md-start">
+                <label class="form-label fw-bold text-secondary d-block mb-3">Select Quantity</label>
+                <div class="input-group quantity-selector shadow-sm rounded-pill overflow-hidden bg-light" style="max-width: 160px;">
+                  <button class="btn btn-white border-0 px-3" type="button" (click)="decreaseQty()" [disabled]="quantity() <= 1">
+                    <i class="bi bi-dash-lg fw-bold"></i>
+                  </button>
+                  <input type="text" class="form-control text-center fw-bold bg-transparent border-0" [value]="quantity()" readonly>
+                  <button class="btn btn-white border-0 px-3" type="button" (click)="increaseQty()" [disabled]="quantity() >= details.availableSeats">
+                    <i class="bi bi-plus-lg fw-bold"></i>
+                  </button>
+                </div>
+              </div>
+            } @else {
+              <div class="alert alert-danger text-center rounded-3 my-4" role="alert">
+                <i class="bi bi-exclamation-octagon-fill me-2"></i> This event has completely sold out!
+              </div>
+            }
+          </div>
+
+          <div class="total-checkout-section border-top pt-4 mt-4 d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3">
+            <div class="text-center text-sm-start">
+              <span class="text-muted small d-block fw-medium">Total Price</span>
+              <h3 class="fw-extrabold text-success mb-0">${{ quantity() * details.ticketPrice }}</h3>
+            </div>
+            
+            <button class="btn btn-primary btn-lg rounded-pill px-5 py-3 fw-bold shadow-sm" 
+                    [disabled]="details.availableSeats === 0"
+                    (click)="checkoutTickets()">
+              Book Tickets <i class="bi bi-arrow-right-short ms-1 fs-5"></i>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  } @else {
+    <div class="text-center my-4 py-4">
+      <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+        <span class="visually-hidden">Loading Details...</span>
+      </div>
+      <p class="text-muted fw-medium">Assembling premium event experience for you...</p>
+    </div>
+  }
+</div>

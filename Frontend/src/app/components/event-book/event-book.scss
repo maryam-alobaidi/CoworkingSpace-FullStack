@@ -1,0 +1,36 @@
+.image-showcase-wrapper {
+  background-color: #f8f9fa;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  
+  img {
+    transition: transform 0.6s ease;
+  }
+  
+  &:hover img {
+    transform: scale(1.03); // تكبير خفيف وتفاعلي للصورة عند تمرير الماوس
+  }
+}
+
+.booking-action-card {
+  border: 1px solid rgba(0, 0, 0, 0.02);
+}
+
+.quantity-selector {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  
+  .btn-white {
+    background: #ffffff;
+    color: #495057;
+    &:hover:not([disabled]) {
+      background: #e9ecef;
+    }
+  }
+}
+
+.btn-primary {
+  transition: all 0.3s ease;
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(13, 110, 253, 0.25) !important;
+  }
+}

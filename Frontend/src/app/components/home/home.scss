@@ -1,0 +1,61 @@
+.hero-section {
+  min-height: 85vh;
+  
+  /* 🌟 تم تطبيق التدرج الرصاصي الفضي الجذاب */
+  background-image: linear-gradient(135deg, #09090b 0%, #171719 60%, #2d2d2d 100%);
+  
+  background-size: cover;
+  background-position: center;
+  margin-top: -56px; 
+}
+
+.hero-overlay {
+  /* توهج أبيض ناعم جداً يتناسب مع الدرجات الرصاصية الجديدة */
+  background: radial-gradient(circle at 80% 40%, rgba(255, 255, 255, 0.06) 0%, transparent 60%);
+  position: absolute;
+  top: 0;
+  start: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+.text-gradient {
+  background: linear-gradient(45deg, #2c79f6, #989b9b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+// تعديل تموضع صندوق الإحصائيات
+.stats-wrapper {
+  margin-top: -80px !important;
+}
+
+.home-card {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+  border: 1px solid #f1f5f9;
+  overflow: hidden; 
+  border-radius: 1rem; 
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
+    
+    img {
+      transform: scale(1.06);
+    }
+  }
+
+
+  img {
+    transition: transform 0.5s ease;
+  }
+}
+
+.text-truncate-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  height: 40px;
+}

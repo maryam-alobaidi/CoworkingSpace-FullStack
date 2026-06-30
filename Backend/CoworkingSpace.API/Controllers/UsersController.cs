@@ -1,6 +1,10 @@
 ﻿using CoworkingSpace.BLL;
 using CoworkingSpace.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace CoworkingSpace.API.Controllers
 {
@@ -8,6 +12,15 @@ namespace CoworkingSpace.API.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
+        // Add this field to the UsersController class
+        private readonly IConfiguration _configuration;
+
+
+        public UsersController(IConfiguration configuration)
+        {
+
+            _configuration = configuration;
+        }
 
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromBody] CreateUserModel model)
@@ -54,7 +67,7 @@ namespace CoworkingSpace.API.Controllers
 
                 return StatusCode(500, "An error occurred while assigning the role to the user.");
             }
-            return Ok("User added successfully.");
+            return Ok(new { message = "User added successfully." });
         }
 
 
@@ -75,14 +88,47 @@ namespace CoworkingSpace.API.Controllers
             }
 
 
+
+            var token = GenerateJwtToken(user);
+
             return Ok(new
             {
                 user.Id,
                 user.FullName,
-                user.Email
+                user.Email,
+                Token = token // token is included in the response
             });
         }
 
+
+
+        // Helper method to generate JWT token
+        private string GenerateJwtToken(clsUsers user)
+        {
+            var jwtKey = _configuration["Jwt:Key"];
+            if (string.IsNullOrEmpty(jwtKey))
+            {
+                throw new InvalidOperationException("JWT key is not configured.");
+            }
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Name, user.FullName)
+            };
+
+            var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.Now.AddMinutes(120),
+                signingCredentials: credentials);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
@@ -122,10 +168,28 @@ namespace CoworkingSpace.API.Controllers
 
 
         [HttpGet]
-        public  async Task<List<userModel>> GetAllUsers()
+        public async Task<List<userModel>> GetAllUsers()
         {
             return await clsUsers.GetAllUsers();
         }
 
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetUserById(int id)
+        {
+            var user = clsUsers.Find(id);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+            return Ok(new userModel
+            {
+                Id = user.Id,
+                FullName = user.FullName,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber
+            });
+
+
+        }
     }
 }

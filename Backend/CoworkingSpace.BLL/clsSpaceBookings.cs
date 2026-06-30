@@ -150,8 +150,8 @@ namespace CoworkingSpace.BLL
 
                     emailLog = new clsApplicationEmailLogs
                     {
-                        ReferenceID = this.Id,        
-                        LogType = "Booking",            
+                        ReferenceID = this.Id,
+                        LogType = "Booking",
                         RecipientEmail = recipientEmail,
                         Subject = "🎟️ Confirmed: " + this.Id,
                         Body = _GenerateEmailTemplate(userName, spaceDetails),
@@ -182,69 +182,88 @@ namespace CoworkingSpace.BLL
 
         private string _GenerateEmailTemplate(string userName, clsSpaceBookings spaceDetails)
         {
-            // Design Configuration
-            string primaryColor = "#10B981"; // Emerald Green (مناسب أكثر للمساحات والعمل)
-            string secondaryColor = "#111827"; // Dark Gray
-            string accentColor = "#059669"; // Deep Emerald
+            
+            string primaryColor = "#11141a";    
+            string secondaryColor = "#0d6efd";  
+            
 
             return $@"
-<div style='font-family: ""Inter"", ""Segoe UI"", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7fa; padding: 40px 20px; line-height: 1.6; direction: ltr; text-align: left;'>
-    <div style='max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05);'>
-        
-        <div style='background: linear-gradient(135deg, {primaryColor} 0%, {accentColor} 100%); padding: 40px 30px; text-align: center; color: #ffffff;'>
-            <div style='font-size: 50px; margin-bottom: 10px;'>🏢</div>
-            <h1 style='margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.5px;'>Space Reserved!</h1>
-            <p style='margin-top: 10px; opacity: 0.9; font-size: 16px;'>Your workspace is ready for you.</p>
-        </div>
-
-        <div style='padding: 40px 35px;'>
-            <p style='font-size: 18px; color: {secondaryColor}; margin-bottom: 20px;'>Hi <strong>{userName}</strong>,</p>
-            <p style='color: #4b5563; font-size: 15px;'>Your booking has been confirmed successfully. Please find your reservation details below.</p>
-
-            <div style='background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 25px; margin: 30px 0; position: relative;'>
-                <div style='border-left: 4px solid {primaryColor}; padding-left: 15px;'>
-                    <table style='width: 100%; border-collapse: collapse;'>
-                        <tr>
-                            <td style='padding: 10px 0; color: #9ca3af; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;'>Booking Reference</td>
-                            <td style='padding: 10px 0; text-align: right; color: {primaryColor}; font-weight: 800; font-family: ""Courier New"", monospace; font-size: 18px;'>#BK-{this.Id}</td>
-                        </tr>
-                        <tr>
-                            <td style='padding: 10px 0; color: #9ca3af; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;'>Space ID</td>
-                            <td style='padding: 10px 0; text-align: right; color: {secondaryColor}; font-weight: 700;'>{this.SpaceId}</td>
-                        </tr>
-                        <tr>
-                            <td style='padding: 10px 0; color: #9ca3af; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;'>Date</td>
-                            <td style='padding: 10px 0; text-align: right; color: {secondaryColor}; font-weight: 700;'>{this.BookingDate.ToString("MMM dd, yyyy")}</td>
-                        </tr>
-                        <tr>
-                            <td style='padding: 10px 0; color: #9ca3af; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;'>Time Slot</td>
-                            <td style='padding: 10px 0; text-align: right; color: {secondaryColor}; font-weight: 700;'>{this.StartTime} - {this.EndTime}</td>
-                        </tr>
-                        <tr>
-                            <td style='padding: 10px 0; color: #9ca3af; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;'>Total Paid</td>
-                            <td style='padding: 10px 0; text-align: right; color: {secondaryColor}; font-weight: 700;'>{this.TotalPrice:C}</td>
-                        </tr>
-                    </table>
+                    <div style='font-family: ""Segoe UI"", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f6f9; padding: 40px 20px; line-height: 1.6; direction: ltr; text-align: left;'>
+                        <div style='max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05);'>
+                            
+                           <div style='background-color: {primaryColor}; padding: 45px 30px; text-align: center; color: #ffffff; border-bottom: 4px solid {secondaryColor};'>
+                    <div style='font-size: 50px; margin-bottom: 15px;'>🏢</div>
+                    <h1 style='margin: 0; font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;'>Space Reserved!</h1>
+                    <p style='margin-top: 12px; font-size: 15px; color: #ffffff; font-weight: 600; letter-spacing: 1px;'>VANTAGE COWORKING SPACE 👑</p>
+                </div>
+    
+            <div style='padding: 40px 35px;'>
+                <p style='font-size: 18px; color: {secondaryColor}; margin-bottom: 20px;'>Hi <strong>{userName}</strong> 👋,</p>
+                <p style='color: #4b5563; font-size: 15px;'>Your booking has been confirmed successfully. Please find your reservation details below.</p>
+    
+                <div style='background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 25px; margin: 30px 0; position: relative;'>
+                    <div style='border-left: 4px solid {primaryColor}; padding-left: 15px;'>
+                        <table style='width: 100%; border-collapse: collapse;'>
+                            <tr>
+                                <td style='padding: 10px 0; color: #9ca3af; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;'>Booking Reference</td>
+                                <td style='padding: 10px 0; text-align: right; color: {primaryColor}; font-weight: 800; font-family: ""Courier New"", monospace; font-size: 18px;'>#BK-{this.Id}</td>
+                            </tr>
+                            <tr>
+                                <td style='padding: 10px 0; color: #9ca3af; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;'>Space ID</td>
+                                <td style='padding: 10px 0; text-align: right; color: {secondaryColor}; font-weight: 700;'>{this.SpaceId}</td>
+                            </tr>
+                            <tr>
+                                <td style='padding: 10px 0; color: #9ca3af; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;'>Date</td>
+                                <td style='padding: 10px 0; text-align: right; color: {secondaryColor}; font-weight: 700;'>{this.BookingDate.ToString("MMM dd, yyyy")}</td>
+                            </tr>
+                            <tr>
+                                <td style='padding: 10px 0; color: #9ca3af; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;'>Time Slot</td>
+                                <td style='padding: 10px 0; text-align: right; color: {secondaryColor}; font-weight: 700;'>{this.StartTime} - {this.EndTime}</td>
+                            </tr>
+                            <tr>
+                                <td style='padding: 10px 0; color: #9ca3af; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;'>Total Paid</td>
+                                <td style='padding: 10px 0; text-align: right; color: {secondaryColor}; font-weight: 700; font-size: 16px;'>{this.TotalPrice:C}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+    
+                <div style='background-color: #f8f9fa; border-radius: 8px; padding: 15px; border: 1px solid #e5e7eb; border-left: 4px solid {secondaryColor};'>
+                    <p style='margin: 0; font-size: 13px; color: #555555;'>
+                        <strong>Note:</strong> Please arrive 5 minutes before your start time. Show this email at the reception if requested.
+                    </p>
                 </div>
             </div>
-
-            <div style='background-color: #fff7ed; border-radius: 8px; padding: 15px; border: 1px solid #ffedd5;'>
-                <p style='margin: 0; font-size: 13px; color: #9a3412;'>
-                    <strong>Note:</strong> Please arrive 5 minutes before your start time. Show this email at the reception if requested.
+    
+            <div style='background-color: #11141a; padding: 30px; text-align: center; color: #a0a5b0; border-top: 1px solid #22252a;'>
+                <p style='margin: 0; font-size: 13px; color: #a0a5b0;'>
+                    Need help? <a href='mailto:maryamalobaidi107@gmail.com' style='color: {primaryColor}; text-decoration: none; font-weight: bold;'>Contact Support</a><br><br>
+                    <strong>Vantage Coworking Team</strong><br>
+                    <span style='color: {primaryColor}; font-weight: 600;'>Where Inspiration Meets Productivity</span><br>
+                    <span style='color: #6b7280; font-size: 11px; margin-top: 15px; display: block;'>&copy; {DateTime.Now.Year} Vantage Space Inc. All rights reserved.</span>
                 </p>
             </div>
         </div>
-
-        <div style='background-color: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #f3f4f6;'>
-            <p style='margin: 0; font-size: 13px; color: #6b7280;'>
-                Need help? <a href='mailto:maryamalobaidi107@gmail.com' style='color: {primaryColor}; text-decoration: none;'>Contact Support</a><br><br>
-                <strong>CoworkSpace Team</strong><br>
-                123 Innovation Way, Tech City, 2026<br>
-                <span style='color: #9ca3af; font-size: 11px; margin-top: 10px; display: block;'>&copy; 2026 CoworkSpace Inc. All rights reserved.</span>
-            </p>
-        </div>
-    </div>
-</div>";
+    </div>";
         }
+
+
+
+
+        public static async Task<List<string>> GetBookedSlots(int spaceId, DateTime bookingDate)
+        {
+           
+            List<string> bookedSlots = await clsSpaceBookingsData.GetBookedSlots(spaceId, bookingDate);
+
+          
+            return bookedSlots;
+        }
+
+
+        public static async Task<List<spaceBookingsModel>> getUserBooking(int id)
+        {
+            return await clsSpaceBookingsData.getUserBooking(id);
+        }
+
     }
 }

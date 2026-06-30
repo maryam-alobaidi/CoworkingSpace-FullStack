@@ -1,0 +1,107 @@
+<div class="register-container d-flex align-items-center justify-content-center min-vh-100 bg-light px-3">
+  <div class="card register-card border-0 shadow-lg overflow-hidden">
+    <div class="row g-0 h-100">
+      
+      <div class="col-lg-5 d-none d-lg-flex flex-column justify-content-between p-5 register-sidebar text-white">
+        <div>
+          <h3 class="fw-bold mb-3">VANTAGE</h3>
+          <p class="lead opacity-75">Join us today and start your journey to organizing your workspaces intelligently.</p>
+        </div>
+        <div class="register-sidebar-footer opacity-50 small">
+          © 2026 Vantage Space. All rights reserved.
+        </div>
+      </div>
+
+      <div class="col-lg-7 p-4 p-sm-5 d-flex flex-column justify-content-center bg-white">
+        <div class="mb-4">
+          <h2 class="fw-bold text-dark mb-1">Create Account</h2>
+          <p class="text-muted">Enter your details to register your new workspace profile.</p>
+        </div>
+
+        <form [formGroup]="signUpForm" (ngSubmit)="onSubmit()" class="needs-validation" novalidate>
+          
+          <div class="mb-3">
+            <label for="fullName" class="form-label text-secondary small fw-medium">Full Name</label>
+            <div class="input-group">
+              <input 
+                type="text" 
+                id="fullName" 
+                formControlName="fullName"
+                class="form-control custom-input" 
+                placeholder="Maryam Al Obaidi"
+                [class.is-invalid]="signUpForm.get('fullName')?.touched && signUpForm.get('fullName')?.invalid">
+            </div>
+            @if (signUpForm.get('fullName')?.touched && signUpForm.get('fullName')?.hasError('required')) {
+              <div class="invalid-feedback">Full name is required.</div>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label for="email" class="form-label text-secondary small fw-medium">Email Address</label>
+            <input 
+              type="email" 
+              id="email" 
+              formControlName="email"
+              class="form-control custom-input" 
+              placeholder="name@example.com"
+              [class.is-invalid]="signUpForm.get('email')?.touched && signUpForm.get('email')?.invalid">
+            @if (signUpForm.get('email')?.touched) {
+              @if (signUpForm.get('email')?.hasError('required')) {
+                <div class="invalid-feedback">Email address is required.</div>
+              } @else if (signUpForm.get('email')?.hasError('email')) {
+                <div class="invalid-feedback">Please enter a valid email address.</div>
+              }
+            }
+          </div>
+
+          <div class="mb-3">
+  <label for="phoneNumber" class="form-label text-secondary small fw-medium">Phone Number</label>
+  <input 
+    type="text" 
+    id="phoneNumber" 
+    formControlName="phoneNumber"
+    class="form-control custom-input" 
+    placeholder="+34..."
+    [class.is-invalid]="signUpForm.get('phoneNumber')?.touched && signUpForm.get('phoneNumber')?.invalid">
+  @if (signUpForm.get('phoneNumber')?.touched && signUpForm.get('phoneNumber')?.hasError('required')) {
+    <div class="invalid-feedback">Phone number is required.</div>
+  }
+</div>
+
+          <div class="mb-4">
+            <label for="password" class="form-label text-secondary small fw-medium">Password</label>
+            <input 
+              type="password" 
+              id="password" 
+              formControlName="password"
+              class="form-control custom-input" 
+              placeholder="••••••••"
+              [class.is-invalid]="signUpForm.get('password')?.touched && signUpForm.get('password')?.invalid">
+            @if (signUpForm.get('password')?.touched) {
+              @if (signUpForm.get('password')?.hasError('required')) {
+                <div class="invalid-feedback">Password is required.</div>
+              } @else if (signUpForm.get('password')?.hasError('minlength')) {
+                <div class="invalid-feedback">Password must be at least 8 characters long.</div>
+              }
+            }
+          </div>
+
+          <button 
+            type="submit" 
+            [disabled]="signUpForm.invalid"
+            class="btn btn-primary w-100 rounded-pill py-2.5 fw-medium btn-submit shadow-sm transition">
+            Sign Up
+          </button>
+        </form>
+
+        <div class="text-center mt-4">
+          <p class="text-muted small mb-0">
+            Already have an account? 
+            <a routerLink="/login" class="text-primary fw-medium text-decoration-none hover-underline">Login here</a>
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

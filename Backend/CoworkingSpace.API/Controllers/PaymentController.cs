@@ -6,6 +6,8 @@ namespace CoworkingSpace.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+
+    // I don't use but i will save this class if i wsnt i future use it
     public class PaymentsController : ControllerBase
     {
         [HttpPost("create-payment-intent")]
@@ -32,7 +34,7 @@ namespace CoworkingSpace.API.Controllers
             var options = new PaymentIntentCreateOptions
             {
                 Amount = (long)(request.Amount * 100),
-                Currency = "eur",
+                Currency = "usd",
                 PaymentMethodTypes = new List<string> { "card" },
                 Metadata = metadata
             };

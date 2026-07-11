@@ -51,5 +51,12 @@ namespace CoworkingSpace.BLL
         }
 
 
+        public static async Task<string> GetRoleNameByUserId(int userId)
+        {
+            if (userId <= 0)
+                return null;
+            return await clsUserRolesData.GetRoleNameByUserId(userId);
+        }
+
     }
  }

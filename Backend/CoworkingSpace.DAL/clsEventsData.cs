@@ -126,5 +126,16 @@ namespace CoworkingSpace.DAL
             return isFound;
         }
 
+
+        public static async Task<int?> getUpcomingEventsCount()
+        {
+
+            using (SqlCommand command = new SqlCommand("sp_GetUpcomingEventsCount"))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                return await clsPrimaryFunctions.GetScalarAsync(command);
+            }
+        }
+
     }
 }

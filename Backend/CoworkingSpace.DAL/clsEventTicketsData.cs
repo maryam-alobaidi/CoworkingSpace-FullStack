@@ -79,8 +79,9 @@ namespace CoworkingSpace.DAL
             }
         }
 
-        public static async Task<eventTicketModel> FindByID(int Id, eventTicketModel model)
+        public static async Task<eventTicketModel> FindByID(int Id)
         {
+            eventTicketModel? model = null;
             using (SqlConnection connection = new SqlConnection(clsPrimaryFunctions.connectionString))
             {
                 using (SqlCommand command = new SqlCommand("Sp_GetEventTicketsByID", connection))
@@ -89,18 +90,26 @@ namespace CoworkingSpace.DAL
                     command.Parameters.AddWithValue("@Id", Id);
                     try
                     {
-                        connection.Open();
-                        using (SqlDataReader reader = command.ExecuteReader())
+                        // 1️⃣ فتح الاتصال بشكل Async
+                        await connection.OpenAsync();
+
+                        using (SqlDataReader reader = await command.ExecuteReaderAsync())
                         {
                             if (await reader.ReadAsync())
                             {
+                                model = new eventTicketModel();
                                 model.Id = (int)reader["Id"];
                                 model.EventId = (int)reader["EventId"];
                                 model.UserId = (int)reader["UserId"];
-                                model.TicketCode = (string)reader["TicketCode"];
-                                model.PurchaseDate = (DateTime)reader["PurchaseDate"];
+
+                                // معالجة النصوص بشكل آمن لحمايتها من الـ Null
+                                model.TicketCode = reader["TicketCode"] != DBNull.Value ? (string)reader["TicketCode"] : null;
+                                model.PurchaseDate = reader["PurchaseDate"] != DBNull.Value ? (DateTime)reader["PurchaseDate"] : DateTime.Now;
+
                                 model.PaymentStatus = reader["PaymentStatus"] != DBNull.Value ? (string)reader["PaymentStatus"] : null;
                                 model.TransactionId = reader["TransactionId"] != DBNull.Value ? (string)reader["TransactionId"] : null;
+                                model.TotalPrice = reader["TotalPrice"] != DBNull.Value ? (decimal)reader["TotalPrice"] : 0;
+                                model.EventTitle = reader["EventTitle"] != DBNull.Value ? (string)reader["EventTitle"] : "Event Ticket";
                             }
                         }
                     }
@@ -123,7 +132,6 @@ namespace CoworkingSpace.DAL
             }
         }
 
-        // 🌟 الدالة الأخيرة المحدثة والمكتملة لعمل الـ INNER JOIN الذكي 🌟
         public static async Task<List<eventTicketModel>> GetTicketsByUserId(int userId)
         {
             using (SqlCommand command = new SqlCommand("Sp_GetEventTicketsByUserId"))
@@ -145,7 +153,7 @@ namespace CoworkingSpace.DAL
                             TicketCode = (string)reader["TicketCode"],
                             PurchaseDate = (DateTime)reader["PurchaseDate"],
 
-                            
+
                             PaymentStatus = reader["PaymentStatus"] != DBNull.Value ? (string)reader["PaymentStatus"] : null,
                             TransactionId = reader["TransactionId"] != DBNull.Value ? (string)reader["TransactionId"] : null,
 
@@ -158,5 +166,32 @@ namespace CoworkingSpace.DAL
                 }
             }
         }
+
+        public static async Task<List<RecentEventTicket>> GetRecentEventTicket()
+        {
+            using (SqlCommand command = new SqlCommand("Sp_GetRecentEventTickets"))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                using (var reader = await clsPrimaryFunctions.GetAsync(command))
+                {
+                    List<RecentEventTicket> recentTicketsList = new List<RecentEventTicket>();
+                    while (reader.Read())
+                    {
+                        recentTicketsList.Add(new RecentEventTicket
+                        {
+                            TicketId= (int)reader["TicketId"],
+                            UserName = reader["UserName"] != DBNull.Value ? (string)reader["UserName"] : null,
+                            EventName = reader["EventName"] != DBNull.Value ? (string)reader["EventName"] : null,
+                            PurchaseDate = reader["PurchaseDate"] != DBNull.Value ? (DateTime)reader["PurchaseDate"] : DateTime.Now,
+                            Price = reader["Price"] != DBNull.Value ? Convert.ToDecimal(reader["Price"]) : 0,
+                            Status = reader["Status"] != DBNull.Value ? (string)reader["Status"] : null
+
+                        });
+                    }
+                    return recentTicketsList;
+                }
+            }
+        }
+
     }
 }

@@ -3,6 +3,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Auth } from '../../services/auth';
 import { Router, RouterLink } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-register',
@@ -14,6 +15,7 @@ export class Register {
 
   private authService=inject(Auth);
   private router=inject(Router);
+   toastr=inject(ToastrService);
 
   signUpForm= new FormGroup({
     fullName:new FormControl('',{nonNullable:true,validators:[Validators.required,Validators.minLength(3)]}),
@@ -27,11 +29,11 @@ export class Register {
     if(this.signUpForm.valid){
       this.authService.register(this.signUpForm.getRawValue()).subscribe({
         next:(response)=>{
-          alert('Registration Successful! Please Login.');
+          this.toastr.success('Registration Successful! Please Login.');
           this.router.navigate(['/login']);
         },
         error: (err) => {
-        alert('Registration failed: ' + err.error);
+        this.toastr.error('Registration failed: ' + err.error);
       }
       })
     }

@@ -84,23 +84,7 @@ namespace CoworkingSpace.BLL
             return null;
         }
 
-        //public static clsEvents FindByName(string Title)
-        //{
-        //    // Call DataAccess Layer
-        //    int Id = -1;
-        //    string Description = "";
-        //    DateTime EventDate = DateTime.MinValue;
-        //    decimal TicketPrice = 0.0m;
-        //    int MaxAttendees = -1;
-        //    int AvailableSeats = -1;
-
-        //    bool IsFound = clsEventsData.FindByName(ref Id, Title, ref Description, ref EventDate, ref TicketPrice, ref MaxAttendees, ref AvailableSeats);
-        //    if (IsFound)
-        //        return new clsEvents(Id, Title, Description, EventDate, TicketPrice, MaxAttendees, AvailableSeats);
-        //    else
-        //        return null;
-        //}
-
+    
         public static async Task<List<eventModel>> GetAllEvents()
         {
             return await clsEventsData.GetAllEvents();
@@ -135,5 +119,9 @@ namespace CoworkingSpace.BLL
             return await clsEventsData.UpdateEvents(model) ?? false;
         }
 
+        public static async Task<int?> getUpcomingEventsCount()
+        {
+            return await clsEventsData.getUpcomingEventsCount();
+        }
     }
 }

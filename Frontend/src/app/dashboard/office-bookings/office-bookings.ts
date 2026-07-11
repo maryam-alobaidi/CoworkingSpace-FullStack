@@ -7,6 +7,8 @@ import { DatePipe, NgClass } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Booking } from '../../components/space-book/booking';
 
+
+
 @Component({
   selector: 'app-office-bookings',
   imports: [NgClass, DatePipe,RouterLink],
@@ -76,7 +78,7 @@ export class OfficeBookings implements OnInit {
 
 
   goToChackOut(Id: number) {
-  // 🌟 قمنا بحذف كلمة return من هنا
+  
   this.spaceBookingService.rePay(Id).subscribe({
     next: (response: any) => {
       console.log('Response from server:', response); // للتأكد من البيانات في الـ Console
@@ -103,7 +105,6 @@ export class OfficeBookings implements OnInit {
 
 
   printReceipt() {
-  // 1. جلب محتوى الإيصال فقط عبر الـ ID
   const printContents = document.getElementById('receiptContent')?.innerHTML;
   
   if (!printContents) {

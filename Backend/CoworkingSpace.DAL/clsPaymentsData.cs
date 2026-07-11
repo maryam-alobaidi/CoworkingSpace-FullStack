@@ -14,21 +14,49 @@ namespace CoworkingSpace.DAL
 
         public static async Task<int?> AddNewPayments(paymentsModel model)
         {
-            using (SqlCommand command = new SqlCommand("Sp_AddNewPayments"))
+
+            using (SqlConnection connection = new SqlConnection(clsPrimaryFunctions.connectionString))
             {
-                command.CommandType = CommandType.StoredProcedure;
-                command.Parameters.AddWithValue("@ReferenceID", model.ReferenceID);
-                command.Parameters.AddWithValue("@ReferenceType", model.ReferenceType);
-                command.Parameters.AddWithValue("@Amount", model.Amount);
-                command.Parameters.AddWithValue("@Currency", model.Currency);
-                command.Parameters.AddWithValue("@PaymentMethod", model.PaymentMethod);
-                command.Parameters.AddWithValue("@TransactionID", model.TransactionID);
-                command.Parameters.AddWithValue("@PaymentStatus", model.PaymentStatus);
-                command.Parameters.AddWithValue("@CreatedAt", model.CreatedAt);
+                using (SqlCommand command = new SqlCommand("Sp_AddNewPayments", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
 
-                command.Parameters.Add("@NewAddClass", SqlDbType.Int).Direction = ParameterDirection.Output;
+                    command.Parameters.AddWithValue("@ReferenceID", model.ReferenceID);
+                    command.Parameters.AddWithValue("@ReferenceType", model.ReferenceType);
+                    command.Parameters.AddWithValue("@Amount", model.Amount);
+                    command.Parameters.AddWithValue("@Currency", model.Currency);
+                    command.Parameters.AddWithValue("@PaymentMethod", model.PaymentMethod);
+                    command.Parameters.AddWithValue("@TransactionID", model.TransactionID);
+                    command.Parameters.AddWithValue("@PaymentStatus", model.PaymentStatus);
+                    command.Parameters.AddWithValue("@CreatedAt", model.CreatedAt);
 
-                return await clsPrimaryFunctions.AddAsync(command, "@NewAddClass");
+                    // إضافة الـ Output Parameter
+                    SqlParameter outputIdParam = new SqlParameter("@NewAddClass", SqlDbType.Int)
+                    {
+                        Direction = ParameterDirection.Output
+                    };
+                    command.Parameters.Add(outputIdParam);
+
+                    try
+                    {
+                        // فتح الاتصال والتنفيذ بأمان
+                        await connection.OpenAsync();
+                        await command.ExecuteNonQueryAsync();
+
+                        if (outputIdParam.Value != DBNull.Value)
+                        {
+                            return (int)outputIdParam.Value;
+                        }
+
+                        return -1;
+                    }
+                    catch (Exception ex)
+                    {
+                        // تسجيل الخطأ الفعلي لتتمكني من رؤيته في لوحة تحكم السيرفر
+                        clsPrimaryFunctions.EntireInfoToEventLoge($"Error in AddNewPayments: {ex.Message}");
+                        return -1;
+                    }
+                }
             }
         }
 
@@ -71,7 +99,7 @@ namespace CoworkingSpace.DAL
             }
         }
 
-        public static bool FindByID(int PaymentID,paymentsModel model)
+        public static bool FindByID(int PaymentID, paymentsModel model)
         {
             bool isFound = false;
             using (SqlConnection connection = new SqlConnection(clsPrimaryFunctions.connectionString))
@@ -91,10 +119,10 @@ namespace CoworkingSpace.DAL
                                 model.ReferenceID = (int)reader["ReferenceID"];
                                 model.ReferenceType = (string)reader["ReferenceType"];
                                 model.Amount = (decimal)reader["Amount"];
-                                 model.Currency = reader["Currency"] != DBNull.Value ? (string)reader["Currency"] : null;
-                                 model.PaymentMethod = reader["PaymentMethod"] != DBNull.Value ? (string)reader["PaymentMethod"] : null;
-                                 model.TransactionID = reader["TransactionID"] != DBNull.Value ? (string)reader["TransactionID"] : null;
-                                 model.PaymentStatus = (string)reader["PaymentStatus"];
+                                model.Currency = reader["Currency"] != DBNull.Value ? (string)reader["Currency"] : null;
+                                model.PaymentMethod = reader["PaymentMethod"] != DBNull.Value ? (string)reader["PaymentMethod"] : null;
+                                model.TransactionID = reader["TransactionID"] != DBNull.Value ? (string)reader["TransactionID"] : null;
+                                model.PaymentStatus = (string)reader["PaymentStatus"];
                                 model.CreatedAt = reader["CreatedAt"] != DBNull.Value ? (DateTime)reader["CreatedAt"] : default(DateTime);
 
                             }
@@ -119,20 +147,34 @@ namespace CoworkingSpace.DAL
             using (SqlCommand command = new SqlCommand("Sp_UpdatePayments"))
             {
                 command.CommandType = CommandType.StoredProcedure;
-                command.Parameters.AddWithValue("@PaymentID",model. PaymentID);
-                command.Parameters.AddWithValue("@ReferenceID", model. ReferenceID);
-                command.Parameters.AddWithValue("@ReferenceType", model. ReferenceType);
-                command.Parameters.AddWithValue("@Amount", model. Amount);
-                command.Parameters.AddWithValue("@Currency", model. Currency);
-                command.Parameters.AddWithValue("@PaymentMethod", model. PaymentMethod);
-                command.Parameters.AddWithValue("@TransactionID", model. TransactionID);
-                command.Parameters.AddWithValue("@PaymentStatus", model. PaymentStatus);
-                command.Parameters.AddWithValue("@CreatedAt", model. CreatedAt);
+                command.Parameters.AddWithValue("@PaymentID", model.PaymentID);
+                command.Parameters.AddWithValue("@ReferenceID", model.ReferenceID);
+                command.Parameters.AddWithValue("@ReferenceType", model.ReferenceType);
+                command.Parameters.AddWithValue("@Amount", model.Amount);
+                command.Parameters.AddWithValue("@Currency", model.Currency);
+                command.Parameters.AddWithValue("@PaymentMethod", model.PaymentMethod);
+                command.Parameters.AddWithValue("@TransactionID", model.TransactionID);
+                command.Parameters.AddWithValue("@PaymentStatus", model.PaymentStatus);
+                command.Parameters.AddWithValue("@CreatedAt", model.CreatedAt);
 
                 return await clsPrimaryFunctions.UpdateAsync(command);
             }
         }
 
-    }
 
+        public static async Task<decimal> GetTotalRevenue()
+        {
+            using (SqlCommand command = new SqlCommand("Sp_GetTotalRevenue"))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                object result = await clsPrimaryFunctions.ExecuteScalarAsync(command);
+                if (result != null && result != DBNull.Value)
+                {
+                    return Convert.ToDecimal(result);
+                }
+                return 0m; // Return 0 if no revenue is found
+            }
+        }
+
+    }
 }

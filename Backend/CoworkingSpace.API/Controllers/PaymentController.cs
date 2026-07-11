@@ -1,4 +1,5 @@
-﻿using CoworkingSpace.Models;
+﻿using CoworkingSpace.BLL;
+using CoworkingSpace.Models;
 using Microsoft.AspNetCore.Mvc;
 using Stripe;
 
@@ -14,6 +15,8 @@ namespace CoworkingSpace.API.Controllers
         public async Task<IActionResult> CreatePaymentIntent([FromBody] PaymentRequestModel request)
         {
             var metadata = new Dictionary<string, string>();
+
+
 
             // تحديد نوع المعرف المرجعي (تذكرة أم حجز مساحة)
             if (request.ReferenceType == "Event")
@@ -44,6 +47,23 @@ namespace CoworkingSpace.API.Controllers
 
             return Ok(new { clientSecret = intent.ClientSecret });
         }
+
+
+        [HttpGet("total-payments")]
+        public async Task<IActionResult> GetTotalRevenue()
+        {
+            try
+            {
+                decimal totalRevenue = await clsPayments.GetTotalRevenue();
+                return Ok(new { totalRevenue });
+
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while calculating total revenue.", error = ex.Message });
+            }
+        }
+
     }
 
 }

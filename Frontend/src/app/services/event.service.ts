@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { map, Observable, tap } from 'rxjs';
 import { EventModel } from '../models/event.model';
+import { RecentEventTicket } from '../models/recent-event-ticket';
 
 @Injectable({
   providedIn: 'root',
@@ -25,12 +26,9 @@ export class EventSevice {
       9: '/images/eventSpace9.jpg',
       };
 
-  getAllEvents():Observable<EventModel[]>{
+   getAllEvents():Observable<EventModel[]>{
 
- 
-    
-
-    return this.http.get<EventModel[]>(`${this.apiUrl}/getAll`).pipe(
+      return this.http.get<EventModel[]>(`${this.apiUrl}/getAll`).pipe(
          map(data => data.map(ev => {
        
         const randomId = Math.floor(Math.random() * 9) + 1;
@@ -44,11 +42,10 @@ export class EventSevice {
       
       tap(data => this.events.set(data))
     );  
-
-  }
+   }
    
 
-getEventDetailsById(id: any): Observable<EventModel> {
+  getEventDetailsById(id: any): Observable<EventModel> {
   return this.http.get<EventModel>(`${this.apiUrl}/get/${id}`).pipe(
     map((ev: any) => {
      
@@ -61,9 +58,14 @@ getEventDetailsById(id: any): Observable<EventModel> {
       } as EventModel;
     })
   );
-}
+  }
 
+  getUpcomingEvents():Observable<{countUpcomingEvents : number}>{
 
+    return this.http.get<{countUpcomingEvents:number}>(`${this.apiUrl}/upcoming-events`);
+  }
+
+ 
 
 
 }

@@ -113,8 +113,8 @@ namespace CoworkingSpace.DAL
                                 model.StartTime = reader["StartTime"] != DBNull.Value ? reader["StartTime"].ToString() : null;
                                 model.EndTime = reader["EndTime"] != DBNull.Value ? reader["EndTime"].ToString() : null;
 
-                             
-                               
+
+
                                 model.TotalPrice = (decimal)reader["TotalPrice"];
                                 model.BookingStatus = (string)reader["BookingStatus"];
                                 model.CreatedAt = (DateTime)reader["CreatedAt"];
@@ -144,7 +144,7 @@ namespace CoworkingSpace.DAL
             }
         }
 
-        public static async  Task<List<string>> GetBookedSlots(int spaceId, DateTime bookingDate)
+        public static async Task<List<string>> GetBookedSlots(int spaceId, DateTime bookingDate)
         {
             using (SqlCommand command = new SqlCommand("Sp_GetBookedSlots"))
             {
@@ -174,7 +174,7 @@ namespace CoworkingSpace.DAL
             {
                 command.CommandType = CommandType.StoredProcedure;
                 command.Parameters.AddWithValue("@UserId", id);
-                
+
                 using (var reader = await clsPrimaryFunctions.GetAsync(command))
                 {
                     List<spaceBookingsModel> spaceBookingsList = new List<spaceBookingsModel>();
@@ -198,6 +198,52 @@ namespace CoworkingSpace.DAL
                     return spaceBookingsList;
                 }
             }
+        }
+
+        public static async Task<int?> getActiveBookings()
+        {
+            using (SqlCommand command = new SqlCommand("SP_GetActiveBookingsCount"))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+
+                return await clsPrimaryFunctions.GetScalarAsync(command);
+
+
+            }
+        }
+
+        public static async Task<List<RecentSpaceReservationDTO>> getRecentSpaceReservations()
+        {
+            
+            var reservationsList = new List<RecentSpaceReservationDTO>();
+
+            using (SqlCommand command = new SqlCommand("sp_GetRecentSpaceReservations"))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+
+                using (var reader = await clsPrimaryFunctions.GetAsync(command))
+                {
+                    
+                    while (await reader.ReadAsync())
+                    {
+                        var reservation = new RecentSpaceReservationDTO
+                        {
+                            BookingId = (int)reader["BookingId"],
+                            UserName = reader["UserName"] != DBNull.Value ? (string)reader["UserName"] : string.Empty,
+                            SpaceName = reader["SpaceName"] != DBNull.Value ? (string)reader["SpaceName"] : string.Empty,
+                            BookingDate = reader["BookingDate"] != DBNull.Value ? (DateTime)reader["BookingDate"] : DateTime.MinValue,
+                            Price = reader["Price"] != DBNull.Value ? (decimal)reader["Price"] : 0,
+                            Status = reader["Status"] != DBNull.Value ? (string)reader["Status"] : string.Empty
+                        };
+
+                        
+                        reservationsList.Add(reservation);
+                    }
+                }
+            }
+
+           
+            return reservationsList;
         }
     }
 }

@@ -11,8 +11,6 @@ namespace CoworkingSpace.DAL
 {
     public class clsUsersData
     {
-
-
         public static async Task<bool> DeleteUsers(int Id)
         {
             using (SqlCommand command = new SqlCommand("Sp_DeleteUserRoles"))
@@ -42,7 +40,8 @@ namespace CoworkingSpace.DAL
                             PasswordSalt = (string)reader["PasswordSalt"],
                             PhoneNumber = reader["PhoneNumber"] != DBNull.Value ? (string)reader["PhoneNumber"] : null,
                             IsEmailConfirmed = (bool)reader["IsEmailConfirmed"],
-                            CreatedAt = (DateTime)reader["CreatedAt"]
+                            CreatedAt = (DateTime)reader["CreatedAt"],
+                            IsSuspended = (bool)reader["IsSuspended"] 
                         });
                     }
 
@@ -76,8 +75,7 @@ namespace CoworkingSpace.DAL
                                 model.PhoneNumber = reader["PhoneNumber"] != DBNull.Value ? (string)reader["PhoneNumber"] : null;
                                 model.IsEmailConfirmed = (bool)reader["IsEmailConfirmed"];
                                 model.CreatedAt = (DateTime)reader["CreatedAt"];
-
-
+                                model.IsSuspended = (bool)reader["IsSuspended"]; 
                             }
                             else
                             {
@@ -107,13 +105,12 @@ namespace CoworkingSpace.DAL
                 command.Parameters.AddWithValue("@PhoneNumber", model.PhoneNumber);
                 command.Parameters.AddWithValue("@IsEmailConfirmed", model.IsEmailConfirmed);
                 command.Parameters.AddWithValue("@CreatedAt", model.CreatedAt);
-
+                command.Parameters.AddWithValue("@IsSuspended", model.IsSuspended);
                 command.Parameters.Add("@NewAddClass", SqlDbType.Int).Direction = ParameterDirection.Output;
 
                 return await clsPrimaryFunctions.AddAsync(command, "@NewAddClass");
             }
         }
-
 
         public static async Task<bool?> UpdateUsers(userModel model)
         {
@@ -128,11 +125,11 @@ namespace CoworkingSpace.DAL
                 command.Parameters.AddWithValue("@PhoneNumber", model.PhoneNumber);
                 command.Parameters.AddWithValue("@IsEmailConfirmed", model.IsEmailConfirmed);
                 command.Parameters.AddWithValue("@CreatedAt", model.CreatedAt);
+                command.Parameters.AddWithValue("@IsSuspended", model.IsSuspended);
 
                 return await clsPrimaryFunctions.UpdateAsync(command);
             }
         }
-
 
         public static async Task<userModel> FindByEmail(string email)
         {
@@ -153,13 +150,48 @@ namespace CoworkingSpace.DAL
                             PasswordSalt = (string)reader["PasswordSalt"],
                             PhoneNumber = reader["PhoneNumber"] != DBNull.Value ? (string)reader["PhoneNumber"] : null,
                             IsEmailConfirmed = (bool)reader["IsEmailConfirmed"],
-                            CreatedAt = (DateTime)reader["CreatedAt"]
+                            CreatedAt = (DateTime)reader["CreatedAt"],
+                            IsSuspended = (bool)reader["IsSuspended"] 
                         };
                     }
                 }
             }
             return null;
+        }
 
+        public static async Task<int?> getTotalMembersCount()
+        {
+            using (SqlCommand command = new SqlCommand("sp_GetTotalMembersCount"))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                return await clsPrimaryFunctions.GetScalarAsync(command);
+            }
+        }
+
+        public static async Task<List<UserWithRoleDto>> getUsersWhitRole()
+        {
+            using (SqlCommand command = new SqlCommand("sp_GetAllUsersWithRoles"))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                using (var reader = await clsPrimaryFunctions.GetAsync(command))
+                {
+                    var users = new List<UserWithRoleDto>();
+                    while (reader.Read())
+                    {
+                        users.Add(new UserWithRoleDto
+                        {
+                            UserId = (int)reader["UserId"],
+                            FullName = (string)reader["FullName"],
+                            Email = (string)reader["Email"],
+                            RoleId = (int)reader["RoleId"],
+                            JoinDate = (DateTime)reader["JoinDate"],
+                            IsSuspended = (bool)reader["IsSuspended"] 
+                        });
+                    }
+
+                    return users;
+                }
+            }
         }
     }
 }

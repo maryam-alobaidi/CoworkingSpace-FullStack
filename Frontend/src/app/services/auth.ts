@@ -3,6 +3,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { UserModel } from '../models/user.model';
 import { Notification } from '../services/notification';
+import { UserWithRoleModel } from '../models/user-with-role-model';
 
 @Injectable({
   providedIn: 'root',
@@ -19,36 +20,38 @@ export class Auth {
       : null
   );
 
-  login(loginData: any): Observable<any> {
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json'
-    });
+login(loginData: any): Observable<any> {
+  const headers = new HttpHeaders({
+    'Content-Type': 'application/json'
+  });
 
-    return this.http.post(`${this.apiUrl}/Login`, loginData, { headers }).pipe(
-      tap((response: any) => {
-        if (response && response.token) {
-          const userData: UserModel = {
-            id: response.id,
-            fullName: response.fullName,
-            email: response.email,
-            phoneNumber: response.phoneNumber
-          } as UserModel;
+  return this.http.post(`${this.apiUrl}/Login`, loginData, { headers }).pipe(
+    tap((response: any) => {
+      const isSuspended = response?.isSuspended;
 
-          
-          localStorage.setItem('vantage_token', response.token);
-          localStorage.setItem('user_data', JSON.stringify(userData)); 
-          
-          // 🚀 بث الإشارة للموقع بالبيانات الجديدة فوراً
-          this.currentUser.set({ userInfo: userData });
+   
+      if (!isSuspended && response && response.token) { 
+        const userData: UserModel = {
+          id: response.id,
+          fullName: response.fullName,
+          email: response.email,
+          phoneNumber: response.phoneNumber,
+          role: response.role,
+          isSuspended: response.isSuspended,
+        } as UserModel;
 
-          if (userData.id) {
+        localStorage.setItem('vantage_token', response.token);
+        localStorage.setItem('user_data', JSON.stringify(userData)); 
+        
+        this.currentUser.set({ userInfo: userData });
+
+        if (userData.id) {
           this.notificationsService.loadNotifications(userData.id);
         }
-        }
-      })
-    );
-  }
-
+      }
+    })
+  );
+}
   logout() {
   
     localStorage.removeItem('vantage_token');
@@ -81,4 +84,17 @@ export class Auth {
       responseType: 'text' 
     });
   }
+
+  getTotalMembers():Observable<{TotalMembersCount:number}>{
+    return this.http.get<{TotalMembersCount:number}>(`${this.apiUrl}/total-members`);
+  }
+
+  getAllUsersWithRoles():Observable<UserWithRoleModel[]>{
+   return this.http.get<UserWithRoleModel[]>(`${this.apiUrl}/with-role`);
+  }
+
+  toggleSuspend(Id: number): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/toggle-suspend/${Id}`, {});
+  }
+  
 }

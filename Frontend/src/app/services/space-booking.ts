@@ -41,5 +41,15 @@ export class SpaceBooking {
 
   rePay(Id:number){
     return this.http.post(`${this.apiUrl}/repay/${Id}`, {});
-    }
+  }
+
+   getActiveBookingsCount(): Observable<{ countActiveBookings: number }> {
+  
+    return this.http.get<{ countActiveBookings: number }>(`${this.apiUrl}/active-bookings`);
+  }
+
+  getRecentReservations():Observable<any[]>{
+     return this.http.get<any[]>(`${this.apiUrl}/recent-reservation`);
+  }
+
 }

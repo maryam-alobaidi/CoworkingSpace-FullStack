@@ -54,6 +54,7 @@ namespace CoworkingSpace.BLL
         {
             return await clsEventTicketsData.GetAllEventTickets();
         }
+
         public static string GenerateUniqueTicketCode()
         {
             const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -62,7 +63,6 @@ namespace CoworkingSpace.BLL
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
-        // دالة الحفظ الأساسية
         public async Task<bool> Save()
         {
             switch (Mode)
@@ -92,7 +92,6 @@ namespace CoworkingSpace.BLL
             return await clsEventTicketsData.UpdateEventTickets(_MapToModel());
         }
 
-        // دالة مساعدة لتحويل البيانات للموديل (تمنع التكرار)
         private eventTicketModel _MapToModel()
         {
             return new eventTicketModel
@@ -107,16 +106,34 @@ namespace CoworkingSpace.BLL
             };
         }
 
-        public static async Task<clsEventTickets> Find(int Id)
+        public static async Task<eventTicketModel> Find(int Id)
         {
-            eventTicketModel model = new eventTicketModel();
-                var result = await clsEventTicketsData.FindByID(Id, model);
-            if (result == null || result.Id == null)
+           
+                var result = await clsEventTicketsData.FindByID(Id);
+            if (result == null)
                 return null;
-            return new clsEventTickets(result);
+            return result;
         }
 
-       
+        public static async Task<clsEventTickets?> FindWithReturnclass(int Id)
+        {
+
+            var ticketModel = await clsEventTicketsData.FindByID(Id);
+            if (ticketModel == null)
+                return null;
+            return new clsEventTickets
+            {
+                Id = ticketModel.Id ?? 0,
+                EventId = ticketModel.EventId,
+                UserId = ticketModel.UserId,
+                TicketCode = ticketModel.TicketCode,
+                PurchaseDate = ticketModel.PurchaseDate ?? DateTime.Now,
+                PaymentStatus = ticketModel.PaymentStatus,
+                TransactionId = ticketModel.TransactionId,
+                Mode = enMode.update 
+            };
+        }
+
         public async Task<bool> SaveTicketWithEmailLog(string recipientEmail, string userName, IEmailService emailService)
         {
          
@@ -228,10 +245,14 @@ namespace CoworkingSpace.BLL
             return await clsEventTicketsData.DeleteEventTickets(Id);
         }
 
-
         public static async Task<List<eventTicketModel>> GetTicketsByUserId(int UserId)
         {
             return await clsEventTicketsData.GetTicketsByUserId(UserId);
+        }
+
+        public static async Task<List<RecentEventTicket>> GetRecentEventTicket()
+        {
+            return await clsEventTicketsData.GetRecentEventTicket();
         }
     }
 }

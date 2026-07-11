@@ -1,0 +1,150 @@
+<div class="container-fluid p-2">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-dark m-0">Dashboard Overview</h2>
+        <span class="badge bg-primary p-2 fs-6">Live System Status</span>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm p-3 bg-white h-100 border-start border-4 border-success">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-muted fw-semi-bold mb-1">Total Revenue</h6>
+                        <h3 class="fw-bold text-dark m-0">{{totalRevenue()|currency}}</h3>
+                    </div>
+                    <div class="bg-success-subtle text-success rounded-circle p-3 fs-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                       💰
+                   </div>
+
+                </div>
+            </div>
+        </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="card border-0 shadow-sm p-3 bg-white h-100 border-start border-4 border-primary">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <h6 class="text-muted fw-semi-bold mb-1">Active Bookings</h6>
+            <h3 class="fw-bold text-dark m-0">{{activeBookingsCount()}}</h3>
+          </div>
+          <div class="bg-primary-subtle text-primary rounded-circle p-3 fs-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+            🖥️
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="card border-0 shadow-sm p-3 bg-white h-100 border-start border-4 border-warning">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <h6 class="text-muted fw-semi-bold mb-1">Upcoming Events</h6>
+            <h3 class="fw-bold text-dark m-0">{{upcomingEventsCount()}}</h3>
+          </div>
+          <div class="bg-warning-subtle text-warning rounded-circle p-3 fs-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+            📅
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="card border-0 shadow-sm p-3 bg-white h-100 border-start border-4 border-info">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <h6 class="text-muted fw-semi-bold mb-1">Total Members</h6>
+            <h3 class="fw-bold text-dark m-0">{{totalMembersCount()}}</h3>
+          </div>
+          <div class="bg-info-subtle text-info rounded-circle p-3 fs-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+            👥
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+ <div class="row g-4"> 
+  <div class="col-12">
+    <div class="card border-0 shadow-sm bg-white p-4 h-100 bg-primary-subtle">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold text-dark m-0">Recent Space Reservations</h5>
+        <button class="btn btn-sm btn-outline-success" routerLink="/admin/spaces">View All</button>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle m-0">
+          <thead class="table-light">
+            <tr>
+              <th>User</th>
+              <th>Space / Office</th>
+              <th>Date</th>
+              <th>Price</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (booking of recentBookReservations(); track booking.bookingId) {
+              <tr>
+                <td class="fw-bold text-dark">{{ booking.userName }}</td>
+                <td>{{ booking.spaceName }}</td>
+                <td>{{ booking.bookingDate }}</td> 
+                <td>{{ booking.price | currency }}</td>
+                <td>
+                  <span class="badge" [ngClass]="{
+                    'bg-success-subtle text-success': booking.status === 'Confirmed',
+                    'bg-warning-subtle text-warning': booking.status === 'Pending'
+                  }">
+                    {{ booking.status }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody> </table>
+      </div>
+    </div>
+  </div>
+
+ <div class="col-12"> 
+  <div class="card border-0 shadow-sm bg-white p-4 h-100 bg-primary-subtle">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-bold text-dark m-0">Recent Event Tickets</h5>
+      <button class="btn btn-sm btn-outline-success" routerLink="/admin/events">View All</button>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle m-0">
+        <thead class="table-light">
+          <tr>
+            <th>User</th>
+            <th>Event Name</th> 
+            <th>Purchase Date</th> 
+            <th>Price</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (ticket of recentEventTickets(); track ticket.ticketId) {
+            <tr>
+              <td class="fw-bold text-dark">{{ ticket.userName }}</td>
+              <td>{{ ticket.eventName }}</td>
+              <td>{{ ticket.purchaseDate  }}</td> <td>{{ ticket.price | currency }}</td>
+              <td>
+                <span class="badge" [ngClass]="{
+                  'bg-success-subtle text-success': ticket.status === 'Completed',
+                  'bg-warning-subtle text-warning': ticket.status === 'Pending'
+                }">
+                  {{ ticket.status }}
+                </span>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="text-center text-muted py-3">No recent tickets sold.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>

@@ -9,6 +9,9 @@ using System.Transactions;
 
 namespace CoworkingSpace.BLL
 {
+    /// <summary>
+    /// 7949
+    /// </summary>
     public class clsSpaceBookings
     {
         public enum enMode { addNew = 0, update = 1 }
@@ -247,9 +250,6 @@ namespace CoworkingSpace.BLL
     </div>";
         }
 
-
-
-
         public static async Task<List<string>> GetBookedSlots(int spaceId, DateTime bookingDate)
         {
            
@@ -263,6 +263,16 @@ namespace CoworkingSpace.BLL
         public static async Task<List<spaceBookingsModel>> getUserBooking(int id)
         {
             return await clsSpaceBookingsData.getUserBooking(id);
+        }
+
+        public static async Task<int?> getActiveBookings()
+        {
+            return await clsSpaceBookingsData.getActiveBookings();
+        }
+
+        public static async Task<List<RecentSpaceReservationDTO>> getRecentSpaceReservations()
+        {
+            return await clsSpaceBookingsData.getRecentSpaceReservations();
         }
 
     }

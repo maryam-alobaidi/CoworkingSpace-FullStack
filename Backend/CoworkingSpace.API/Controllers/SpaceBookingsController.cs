@@ -330,5 +330,35 @@ namespace CoworkingSpace.API.Controllers
             }
         }
 
+        [HttpGet("active-bookings")]
+        public async Task<IActionResult> getActiveBookings()
+        {
+            try
+            {
+                int? countActiveBookings = await clsSpaceBookings.getActiveBookings();
+                return Ok(new { countActiveBookings });
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while return active bookings.", error = ex.Message });
+            }
+        }
+
+        [HttpGet ("recent-reservation")]
+        public async Task<IActionResult> getRecentSpaceReservations()
+        {
+            try
+            {
+                var recentBookings = await clsSpaceBookings.getRecentSpaceReservations();
+                return Ok( recentBookings );
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while returning recent bookings.", error = ex.Message });
+            }
+        }
+
     }
 }

@@ -8,6 +8,5 @@ eventDate:Date|string;
 ticketPrice:number;
 maxAttendees:number;
 availableSeats:number;
-
 imageUrl?: string;
 }

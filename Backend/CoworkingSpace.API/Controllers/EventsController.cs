@@ -144,6 +144,21 @@ namespace CoworkingSpace.API.Controllers
 
         }
 
+        [HttpGet("upcoming-events")]
+        public async  Task<IActionResult> GetUpcomingEventsCount()
+        {
+            try
+            {
+                int? countUpcomingEvents = await clsEvents.getUpcomingEventsCount();
+                return Ok(new { countUpcomingEvents });
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while return the count Upcoming Events.", error = ex.Message });
+            }
+        }
+
     }
 
 }

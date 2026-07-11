@@ -8,7 +8,7 @@ namespace CoworkingSpace.Models
 {
     public class ConfirmEventPaymentModel
     {
-        public int TicketId { get; set; }
+        public string TicketIds { get; set; }
         public int Quantity { get; set; }
         public string TransactionId { get; set; }
     }

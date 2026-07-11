@@ -1,0 +1,52 @@
+<div class="admin-wrapper d-flex flex-column" style="min-height: 100vh;">
+  
+<nav class="navbar navbar-dark bg-dark px-4 py-3 justify-content-between shadow">
+  
+  <div class="d-flex align-items-center">
+    <h1 class="vantage-logo text-white fw-bold m-0 me-2">VANTAGE</h1>
+    <i class="fa-solid fa-crown silver-crown"></i>
+  </div>
+
+  <div class="text-white d-flex align-items-center gap-3">
+    <span>👤 Welcome, Admin {{adminName()}}</span>
+    <button class="btn btn-sm btn-outline-danger" (click)="logout()">Logout</button>
+  </div>
+
+</nav>
+
+  <div class="d-flex flex-grow-1">
+    <div class="bg-dark text-white p-3 border-top border-secondary shadow-sm" style="width: 300px; min-height: 100%;">
+      <ul class="nav flex-column gap-2 mt-2">
+        <li class="nav-item">
+          <a class="nav-link text-white p-2 rounded d-flex align-items-center gap-2" 
+             routerLink="/admin/overview" routerLinkActive="bg-primary fw-bold">
+            <i class="bi bi-speedometer2"></i> Dashboard Overview
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-white p-2 rounded d-flex align-items-center gap-2" 
+             routerLink="/admin/events" routerLinkActive="bg-primary fw-bold">
+            <i class="bi bi-calendar-event"></i> Manage Events
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-white p-2 rounded d-flex align-items-center gap-2" 
+             routerLink="/admin/spaces" routerLinkActive="bg-primary fw-bold">
+            <i class="bi bi-building"></i> Space Reservations
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-white p-2 rounded d-flex align-items-center gap-2" 
+             routerLink="/admin/users" routerLinkActive="bg-primary fw-bold">
+            <i class="bi bi-people"></i> Users & Roles
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="flex-grow-1 p-4 bg-light">
+      <router-outlet></router-outlet>
+    </div>
+
+  </div>
+</div>

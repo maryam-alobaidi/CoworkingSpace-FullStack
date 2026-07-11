@@ -3,6 +3,7 @@ import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angula
 import { validate } from '@angular/forms/signals';
 import { Auth } from '../../services/auth';
 import { Router, RouterLink } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-login',
@@ -14,6 +15,8 @@ export class Login {
 
   private authService=inject(Auth);
   private router=inject(Router);
+  toastr=inject(ToastrService);
+
 
   loginForm=new FormGroup({
     email:new FormControl('',{
@@ -27,22 +30,36 @@ export class Login {
   });
 
 
+  onSubmit() {
+    if (this.loginForm.valid) {
+    const loginData = this.loginForm.getRawValue();
+    
+    this.authService.login(loginData).subscribe({
+      next: (response) => {
+        
+        const isSuspended = response?.isSuspended;
 
-  onSubmit(){
-    if(this.loginForm.valid){
-      const loginData=this.loginForm.getRawValue();
-     this.authService.login(loginData).subscribe({
-       next:(response)=>{
-       console.log("todo perfecto..");
-        this.router.navigate(['/']);
-       },
-       error: (err) => {
-        console.error('Error for login:', err);
-       
-        alert('Email or Password incorrect');
+        if (!isSuspended) {
+         
+          const storedUserData = localStorage.getItem('user_data');
+          const parsedUser = storedUserData ? JSON.parse(storedUserData) : null;
+          
+          const userRole = response?.role || response?.Role || parsedUser?.role;
+        
+          if (userRole && userRole.toLowerCase() === 'admin') {
+            this.router.navigate(['/admin']);
+          } else {
+            this.router.navigate(['/']);
+          }
+        } else {
+          
+          this.toastr.error("User is not active. Contact with the service.");
+        }
+      },
+      error: (err) => {
+        this.toastr.error("Invalid credentials or server error.");
       }
-     })
+    });
     }
-
   }
 }

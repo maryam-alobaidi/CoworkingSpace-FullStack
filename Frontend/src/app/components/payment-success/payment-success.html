@@ -35,16 +35,16 @@
   <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
     
     @if (type === 'Space') {
-      <button class="btn btn-primary btn-lg px-4" routerLink="/dashboard/my-bookings">
+      <button class="btn btn-primary btn-lg px-4" routerLink="/dashboard/office-bookings">
         Go to My Bookings
       </button>
     } @else if (type === 'Event') {
-      <button class="btn btn-outline-primary btn-sm rounded-pill px-4" routerLink="/dashboard/my-tickets">
+      <button class="btn btn-primary btn-lg px-4" routerLink="/dashboard/event-tickets">
         Go to My Tickets
       </button>
     }
 
-    <button class="btn btn-outline-primary btn-sm rounded-pill px-4" routerLink="/">
+    <button class="btn btn-primary btn-md rounded-pill px-4" routerLink="/">
       Home
     </button>
   </div>

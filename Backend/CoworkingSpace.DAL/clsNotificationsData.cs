@@ -14,25 +14,54 @@ namespace CoworkingSpace.DAL
 
         public static async Task<int?> AddNewNotifications(notificationsModel model)
         {
-            using (SqlCommand command = new SqlCommand("Sp_AddNewNotifications"))
+            // 1️⃣ نقوم بإنشاء الاتصال بشكل صريح هنا لضمان عدم حدوث تضارب في الـ Threads
+            using (SqlConnection connection = new SqlConnection(clsPrimaryFunctions.connectionString))
             {
-                command.CommandType = CommandType.StoredProcedure;
-                command.Parameters.AddWithValue("@UserID", model.UserID);
-                command.Parameters.AddWithValue("@Title", model.Title);
+                using (SqlCommand command = new SqlCommand("Sp_AddNewNotifications", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
 
-               
-                command.Parameters.AddWithValue("@Message", (object)model.Message ?? DBNull.Value);
-                command.Parameters.AddWithValue("@NotificationType", (object)model.NotificationType ?? DBNull.Value);
-                command.Parameters.AddWithValue("@TargetURL", (object)model.TargetURL ?? DBNull.Value);
-                command.Parameters.AddWithValue("@IsRead", model.IsRead);
-                command.Parameters.AddWithValue("@CreatedAt", model.CreatedAt);
+                    command.Parameters.AddWithValue("@UserID", model.UserID);
+                    command.Parameters.AddWithValue("@Title", model.Title);
+                    command.Parameters.AddWithValue("@Message", (object)model.Message ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@NotificationType", (object)model.NotificationType ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@TargetURL", (object)model.TargetURL ?? DBNull.Value);
 
-               
-                command.Parameters.AddWithValue("@ReadAt", (object)model.ReadAt ?? DBNull.Value);
+                    // تأمين إرسال حقل الـ IsRead 
+                    command.Parameters.AddWithValue("@IsRead", model.IsRead);
 
-                command.Parameters.Add("@NewAddClass", SqlDbType.Int).Direction = ParameterDirection.Output;
+                    // تأمين حقل تاريخ الإنشاء
+                    command.Parameters.AddWithValue("@CreatedAt", model.CreatedAt ?? DateTime.Now);
+                    command.Parameters.AddWithValue("@ReadAt", (object)model.ReadAt ?? DBNull.Value);
 
-                return await clsPrimaryFunctions.AddAsync(command, "@NewAddClass");
+                    // تحديد الـ Output Parameter لجلب المعرّف الجديد
+                    SqlParameter outputIdParam = new SqlParameter("@NewAddClass", SqlDbType.Int)
+                    {
+                        Direction = ParameterDirection.Output
+                    };
+                    command.Parameters.Add(outputIdParam);
+
+                    try
+                    {
+                        // فتح الاتصال وتنفيذ الأمر بشكل غير متزامن بالكامل (Async)
+                        await connection.OpenAsync();
+                        await command.ExecuteNonQueryAsync();
+
+                        // استخراج القيمة المسترجعة بأمان
+                        if (outputIdParam.Value != DBNull.Value)
+                        {
+                            return (int)outputIdParam.Value;
+                        }
+
+                        return -1;
+                    }
+                    catch (Exception ex)
+                    {
+                        // تسجيل الخطأ الفعلي إن وجد لكي يظهر لك في الـ Event Log الخاص بالسيرفر
+                        clsPrimaryFunctions.EntireInfoToEventLoge($"Error in AddNewNotifications: {ex.Message}");
+                        return -1;
+                    }
+                }
             }
         }
 

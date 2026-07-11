@@ -14,6 +14,11 @@ import { OfficeBookings } from './dashboard/office-bookings/office-bookings';
 import { EventTickets } from './dashboard/event-tickets/event-tickets';
 import { PaymentFailed } from './components/payment-failed/payment-failed';
 import { EventBook } from './components/event-book/event-book';
+import { AdminLayout } from './admin/admin-layout/admin-layout';
+import { AdminOverview } from './admin/admin-overview/admin-overview';
+import { AdminUsers } from './admin/admin-users/admin-users';
+import { AdminSpaces } from './admin/admin-spaces/admin-spaces';
+import { AdminEvents } from './admin/admin-events/admin-events';
 
 
 
@@ -31,5 +36,17 @@ export const routes: Routes = [
     { path: 'dashboard/office-bookings', component: OfficeBookings },
     { path: 'dashboard/event-tickets', component: EventTickets },
     { path: 'payment-failed' , component: PaymentFailed},
-    { path: 'event-book/:id' , component:EventBook }
+    { path: 'event-book/:id' , component:EventBook },
+
+    {
+        path: 'admin',
+        component: AdminLayout, // الهيكل الخارجي (Navbar + Sidebar)
+        children: [
+            { path: '', redirectTo: 'overview', pathMatch: 'full' }, 
+            { path: 'overview', component: AdminOverview } ,
+            { path: 'users', component: AdminUsers } ,
+            { path: 'spaces', component: AdminSpaces } ,
+            { path: 'events', component: AdminEvents } ,
+        ]
+    }
 ];

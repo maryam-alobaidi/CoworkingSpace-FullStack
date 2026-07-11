@@ -10,7 +10,7 @@ import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-booking',
-  imports: [RouterLink, CommonModule, FormsModule],
+  imports: [ CommonModule, FormsModule],
   templateUrl: './booking.html',
   styleUrl: './booking.scss',
 })
@@ -37,7 +37,7 @@ export class Booking implements OnInit {
   bookedSlots = signal<string[]>([]);
   selectedDate = signal<string>(new Date().toISOString().split('T')[0]);
   
-  // المصفوفة التي تحفظ الأوقات المختارة معاً
+
   selectedSlots = signal<string[]>([]);          
 
   ngOnInit() {

@@ -43,7 +43,7 @@ namespace CoworkingSpace.BLL
 
         private clsPayments(paymentsModel model)
         {
-            this.PaymentID = (int)model. PaymentID;
+            this.PaymentID = (int)model.PaymentID;
             this.ReferenceID = model.ReferenceID;
             this.ReferenceType = model.ReferenceType;
             this.Amount = model.Amount;
@@ -89,7 +89,7 @@ namespace CoworkingSpace.BLL
             return null;
         }
 
-      
+
 
         public static async Task<List<paymentsModel>> GetAllPayments()
         {
@@ -113,9 +113,14 @@ namespace CoworkingSpace.BLL
         {
             paymentsModel model = new paymentsModel();
             // Call DataAccess Layer
-            return await clsPaymentsData.UpdatePayments(model)??false;
+            return await clsPaymentsData.UpdatePayments(model) ?? false;
+        }
+
+        public static async Task<decimal> GetTotalRevenue()
+        {
+            return await clsPaymentsData.GetTotalRevenue();
+
         }
 
     }
-
 }

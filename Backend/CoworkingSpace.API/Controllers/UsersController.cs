@@ -12,29 +12,23 @@ namespace CoworkingSpace.API.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        // Add this field to the UsersController class
         private readonly IConfiguration _configuration;
-
 
         public UsersController(IConfiguration configuration)
         {
-
             _configuration = configuration;
         }
 
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromBody] CreateUserModel model)
         {
-
             if (model == null || string.IsNullOrEmpty(model.FullName) || string.IsNullOrEmpty(model.Email) || string.IsNullOrEmpty(model.Password))
             {
                 return BadRequest("Invalid user data.");
             }
 
             string salt = clsPasswordHasher.GenerateSalt();
-
             string passwordHash = clsPasswordHasher.ComputeHash(model.Password, salt);
-
 
             clsUsers user = new clsUsers
             {
@@ -43,9 +37,7 @@ namespace CoworkingSpace.API.Controllers
                 PasswordHash = passwordHash,
                 PasswordSalt = salt,
                 PhoneNumber = model.PhoneNumber
-
             };
-
 
             bool isAdded = await user.Save();
             if (!isAdded)
@@ -53,20 +45,20 @@ namespace CoworkingSpace.API.Controllers
                 return StatusCode(500, "An error occurred while adding the user.");
             }
 
+            int finalRoleId = model.RoleId ?? 5;
+            
             userRoleModel roleModel = new userRoleModel
             {
                 UserId = user.Id,
-                RoleId = 5 // Assuming 5 is the ID for member role in my system
+                RoleId = finalRoleId
             };
 
-
             bool isRoleAssigned = await clsUserRoles.AddUserRole(roleModel);
-
             if (!isRoleAssigned)
             {
-
                 return StatusCode(500, "An error occurred while assigning the role to the user.");
             }
+
             return Ok(new { message = "User added successfully." });
         }
 
@@ -81,29 +73,30 @@ namespace CoworkingSpace.API.Controllers
 
             clsUsers user = await clsUsers.FindByEmail(model.Email);
 
-
             if (user == null || !clsPasswordHasher.VerifyPassword(model.Password, user.PasswordHash, user.PasswordSalt))
             {
                 return Unauthorized("Invalid email or password.");
             }
 
+           
+            string userRole = await clsUserRoles.GetRoleNameByUserId(user.Id) ?? "User";
 
+            // تمرير الـ Role إلى دالة توليد التوكن
+            var token = GenerateJwtToken(user, userRole);
 
-            var token = GenerateJwtToken(user);
-
+            // 🌟 الخطوة 2: إرجاع الـ Role في الـ Response ليفهمه الأنجولار فوراً
             return Ok(new
             {
                 user.Id,
                 user.FullName,
                 user.Email,
-                Token = token // token is included in the response
+                Role = userRole, // أرسلنا "Admin" أو "User"
+                user.IsSuspended,
+                Token = token
             });
         }
 
-
-
-        // Helper method to generate JWT token
-        private string GenerateJwtToken(clsUsers user)
+        private string GenerateJwtToken(clsUsers user, string role)
         {
             var jwtKey = _configuration["Jwt:Key"];
             if (string.IsNullOrEmpty(jwtKey))
@@ -117,7 +110,8 @@ namespace CoworkingSpace.API.Controllers
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Name, user.FullName)
+                new Claim(ClaimTypes.Name, user.FullName),
+                new Claim(ClaimTypes.Role, role) 
             };
 
             var token = new JwtSecurityToken(
@@ -141,8 +135,6 @@ namespace CoworkingSpace.API.Controllers
             return Ok("User deleted successfully.");
         }
 
-
-
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateUserModel model)
         {
@@ -158,6 +150,7 @@ namespace CoworkingSpace.API.Controllers
             user.FullName = model.FullName;
             user.Email = model.Email;
             user.PhoneNumber = model.PhoneNumber;
+            
             bool isUpdated = await user.Save();
             if (!isUpdated)
             {
@@ -165,7 +158,6 @@ namespace CoworkingSpace.API.Controllers
             }
             return Ok("User updated successfully.");
         }
-
 
         [HttpGet]
         public async Task<List<userModel>> GetAllUsers()
@@ -188,8 +180,65 @@ namespace CoworkingSpace.API.Controllers
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber
             });
+        }
 
+        [HttpGet("total-members")]
+         public async Task<IActionResult> GetTotalMembersCount()
+        {
+            try
+            {
+                int? countTotalMembers = await clsUsers.getTotalMembersCount();
+                return Ok(new { countTotalMembers });
 
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while return the count total members.", error = ex.Message });
+            }
+        }
+
+        [HttpGet("with-role")]
+        public async Task<IActionResult> GetUsersWhitRole()
+        {
+            try
+            {
+                var users = await clsUsers.getUsersWhitRole();
+                if (users == null) return NotFound("No users found.");
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpPatch("toggle-suspend/{Id}")]
+        public async Task<IActionResult> ToggleSuspend(int Id)
+        {
+            try
+            {
+                
+                bool isSuccess = await clsUsers.ToggleSuspend(Id);
+
+                if (isSuccess)
+                {
+                    
+                    var user = clsUsers.Find(Id);
+                    string message = user != null && user.IsSuspended
+                        ? "User account has been suspended successfully."
+                        : "User account has been activated successfully.";
+
+                    return Ok(new { message = message });
+                }
+
+                
+                return BadRequest(new { message = "Failed to update user status. User might not exist." });
+            }
+            catch (Exception ex)
+            {
+               
+                return StatusCode(500, new { message = "An error occurred: " + ex.Message });
+            }
         }
     }
 }

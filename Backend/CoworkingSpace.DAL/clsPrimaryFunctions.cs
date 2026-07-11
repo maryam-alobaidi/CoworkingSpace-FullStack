@@ -6,10 +6,10 @@ using System.Diagnostics;
 
 namespace CoworkingSpace.DAL
 {
-    
-      public static class  clsPrimaryFunctions
-      {
-      
+
+    public static class clsPrimaryFunctions
+    {
+
         public static string? connectionString;
 
         public static void Initialize(string connectionString)
@@ -175,7 +175,7 @@ namespace CoworkingSpace.DAL
 
         public static async Task<bool> ExecuteNonQueryAsync(SqlCommand command)
         {
-         
+
 
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
@@ -184,23 +184,93 @@ namespace CoworkingSpace.DAL
                 try
                 {
                     await connection.OpenAsync();
-                   
+
                     int rowsAffected = await command.ExecuteNonQueryAsync();
 
-                  
+
                     return rowsAffected > 0;
                 }
                 catch (Exception ex)
                 {
-                  
+
                     return false;
                 }
-                
+
             }
         }
 
-    }
 
-  }
+        public static async Task<string> GetRoleNameByUserIdAsync(SqlCommand command)
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+
+                using (command)
+                {
+                    command.Connection = connection;
+                    try
+                    {
+                        await connection.OpenAsync();
+                        object result = await command.ExecuteScalarAsync();
+                        return result?.ToString() ?? string.Empty;
+                    }
+                    catch (Exception ex)
+                    {
+                        EntireInfoToEventLoge(ex.Message);
+                        return string.Empty;
+                    }
+                }
+            }
+        }
+
+
+        public static async Task<object> ExecuteScalarAsync(SqlCommand command)
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                command.Connection = connection;
+                try
+                {
+                    await connection.OpenAsync();
+                    object result = await command.ExecuteScalarAsync();
+                    return result;
+                }
+                catch (Exception ex)
+                {
+                    EntireInfoToEventLoge(ex.Message);
+                    throw; // Rethrow the exception to be handled by the calling code
+                }
+            }
+        }
+
+        public static async Task<int?> GetScalarAsync(SqlCommand command)
+        {
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                command.Connection = connection;
+                try
+                {
+                    await connection.OpenAsync();
+                    object result = await command.ExecuteScalarAsync();
+                    if (result != null && int.TryParse(result.ToString(), out int scalarValue))
+                    {
+                        return scalarValue;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    EntireInfoToEventLoge(ex.Message);
+                    throw; // Rethrow the exception to be handled by the calling code
+                }
+            }
+
+        }
+    }
+}
 
 

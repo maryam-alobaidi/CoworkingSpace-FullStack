@@ -91,5 +91,14 @@ namespace CoworkingSpace.DAL
                 return await clsPrimaryFunctions.AddUserRoleAsync(command);
             }
         }
+
+        public static async Task<string> GetRoleNameByUserId(int userId)
+        {
+            SqlCommand command = new SqlCommand("Sp_GetRoleNameByUserId");
+            command.CommandType = CommandType.StoredProcedure;
+            command.Parameters.AddWithValue("@UserId", userId);
+
+            return await clsPrimaryFunctions.GetRoleNameByUserIdAsync(command);
+        }
     }
 }

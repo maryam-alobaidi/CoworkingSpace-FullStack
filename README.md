@@ -16,6 +16,7 @@ Here are some snapshots of the system interface showing both public and admin vi
 
 <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
   <img src="screenshots/Captura de pantalla 2026-07-17 220421.png" width="300" alt="System Snapshot 1">
+  <img src="screenshots/Captura de pantalla 2026-07-17 222320.png" width="300" alt="System Snapshot">
   <img src="screenshots/Captura de pantalla 2026-07-17 220452.png" width="300" alt="System Snapshot 2">
   <img src="screenshots/Captura de pantalla 2026-07-17 220524.png" width="300" alt="System Snapshot 3">
   <img src="screenshots/Captura de pantalla 2026-07-17 220544.png" width="300" alt="System Snapshot 4">

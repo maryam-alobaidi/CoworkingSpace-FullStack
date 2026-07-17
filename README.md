@@ -7,6 +7,9 @@ Backend: C# / .NET, SQL Server, Stored Procedures.
 
 Frontend: Angular.
 
+Some Image for My System in screenshots
+
+
 العربية
 هذا المشروع عبارة عن منصة ويب متكاملة مصممة لتسهيل حجز المساحات المكتبية و إدارة حجز تذاكر الفعاليات. يوفر النظام لوحة تحكم متطورة للأدمن لإدارة المساحات المكتبية، إضافة الفعاليات، والتحكم في حسابات المستخدمين (إضافة مستخدمين أو تعليق حساباتهم).
 
@@ -20,5 +23,8 @@ Este proyecto es una plataforma web integral diseñada para gestionar reservas d
 Backend: C# / .NET, SQL Server, Stored Procedures.
 
 Frontend: Angular.
+
+
+
 
 

@@ -35,7 +35,6 @@ export class EventBook implements OnInit {
     const eventId=this.route.snapshot.paramMap.get('id');
     if(eventId){
       this.loadEventDetails(eventId);
-
     }
   }
 
@@ -74,22 +73,29 @@ export class EventBook implements OnInit {
     quantity: this.quantity()
   };
   
- 
   this.ticketEventService.creatEventTicket(ticketDto).subscribe({
     next: (res: any) => {
-      
       const url = res.sessionUrl || res.SessionUrl;
 
     if (url) {
       this.toastr.info('Redirecting to secure payment gate...');
       window.location.href=url;
       }else {
-      this.toastr.error('It can not found the url of payment');
+     
+        const ticketIds=res.ticketIds.join(',');
+        this.router.navigate([`/payment-success`],{
+          queryParams:{
+            ticketIds:ticketIds,
+            referenceType:'Event',
+            Qty:res.ticketIds.length
+          }
+        });
     }
     },
     error: (err) => {
       this.toastr.error('An error occurred while initiating checkout.');
     }
   });
-}
+  }
+
 }

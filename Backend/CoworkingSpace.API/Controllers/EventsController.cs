@@ -17,7 +17,7 @@ namespace CoworkingSpace.API.Controllers
             {
                 if (model == null)
                 {
-                    return BadRequest("Event data is required.");
+                    return BadRequest(new { message = "Event data is required." });
                 }
 
                 clsEvents events = new clsEvents
@@ -27,25 +27,29 @@ namespace CoworkingSpace.API.Controllers
                     EventDate = model.EventDate,
                     TicketPrice = model.TicketPrice,
                     MaxAttendees = model.MaxAttendees,
-                    AvailableSeats = model.MaxAttendees // Assuming all seats are available initially, you can adjust this logic as needed
+                    AvailableSeats = model.MaxAttendees
                 };
 
                 bool isSaved = await events.Save();
                 if (!isSaved)
                 {
-                    return StatusCode(500, "An error occurred while saving the eventDetails.");
+                    return StatusCode(500, new { message = "An error occurred while saving the event details." });
                 }
 
-                return Ok("Event added successfully.");
+             
+                model.Id = events.Id; 
+                model.AvailableSeats = events.AvailableSeats;
+
+                
+                return Ok(model);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Error:During add the eventDetails.");
+                return StatusCode(500, new { message = "Error during adding the event details.", details = ex.Message });
             }
-
         }
 
-        [HttpGet("getAll")]
+        [HttpGet("getAllUpcomingEvents")]
         public async Task<IActionResult> Get()
         {
             try
@@ -53,6 +57,32 @@ namespace CoworkingSpace.API.Controllers
                 var events = await clsEvents.GetAllEvents();
                 if (events == null || events.Count == 0)
                     return NotFound("No events.");
+              
+                        var today = DateTime.Today;
+
+                var activeEvents = events
+                    .Where(e => e.EventDate >= today)
+                    .OrderBy(e => e.EventDate);
+
+                        return Ok(activeEvents);   
+            }
+            catch (Exception ex)
+            {
+
+                return StatusCode(500, "Error:During get the data.");
+            }
+        }
+
+        [HttpGet("getAll")]
+        public async Task<IActionResult> GetAll()
+        {
+            try
+            {
+                var events = await clsEvents.GetAllEvents();
+                if (events == null || events.Count == 0)
+                    return NotFound("No events.");
+
+              
 
                 return Ok(events);
             }
@@ -83,7 +113,7 @@ namespace CoworkingSpace.API.Controllers
             catch (Exception ex)
             {
 
-                return StatusCode(500, "Error:During delete the eventDetails.");
+                return StatusCode(500, $"Error: {ex.Message} -> {ex.InnerException?.Message}");
             }
         }
 
@@ -108,7 +138,6 @@ namespace CoworkingSpace.API.Controllers
                 return StatusCode(500, $"Error: {ex.Message}"); 
             }
         }
-
         [HttpPut("update/{id}")]
         public async Task<IActionResult> Update(int Id, [FromBody] eventModel model)
         {
@@ -116,34 +145,43 @@ namespace CoworkingSpace.API.Controllers
             {
                 if (Id == 0 || model == null)
                 {
-                    return BadRequest("Event ID and data are required.");
+                    return BadRequest(new { message = "Event ID and data are required." });
                 }
-                var existingEvent = clsEvents.Find(Id);
+
+                // جلب الفعالية الحالية من قاعدة البيانات
+                var existingEvent =  clsEvents.Find(Id);
                 if (existingEvent == null)
                 {
-                    return NotFound("Event not found.");
+                    return NotFound(new { message = "Event not found." });
                 }
+
+                // تحديث الحقول الأساسية
                 existingEvent.Title = model.Title;
                 existingEvent.Description = model.Description;
                 existingEvent.EventDate = model.EventDate;
                 existingEvent.TicketPrice = model.TicketPrice;
+
+                // حساب المقاعد المتاحة بذكاء عند تغيير السعة القصوى
+                int bookedSeats = existingEvent.MaxAttendees - existingEvent.AvailableSeats;
                 existingEvent.MaxAttendees = model.MaxAttendees;
-                existingEvent.AvailableSeats = model.AvailableSeats;
+                existingEvent.AvailableSeats = model.MaxAttendees - bookedSeats;
+
+                // حفظ التعديلات في قاعدة البيانات
                 bool isUpdated = await existingEvent.Save();
                 if (!isUpdated)
                 {
-                    return StatusCode(500, "An error occurred while updating the eventDetails.");
+                    return StatusCode(500, new { message = "An error occurred while updating the event details." });
                 }
-                return Ok("Event updated successfully.");
+
+                // إرجاع كائن JSON لتجنب مشاكل الـ Parsing في الأنجولار
+                return Ok(new { message = "Event updated successfully.", id = Id });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Error:During update the eventDetails.");
+                // تسجيل الخطأ الحقيقي لمساعدتك في الـ Debugging
+                return StatusCode(500, new { message = $"Error during update: {ex.Message}" });
             }
-
-
         }
-
         [HttpGet("upcoming-events")]
         public async  Task<IActionResult> GetUpcomingEventsCount()
         {

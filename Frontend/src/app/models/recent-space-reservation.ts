@@ -1,5 +1,5 @@
 export interface RecentSpaceReservation {
-    bookingId: number;
+  bookingId: number;
   userName: string;
   spaceName: string;
   bookingDate: string;

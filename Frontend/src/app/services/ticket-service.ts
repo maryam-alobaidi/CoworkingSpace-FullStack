@@ -11,6 +11,8 @@ export class TicketService {
   private http = inject(HttpClient);
   private apiUrl = 'https://localhost:7167/api/EventTickets';
 
+  
+
   // 1️⃣ إنشاء التذكرة (تأكدي أن الـ ticket يحتوي على الـ Metadata للـ Stripe)
   creatEventTicket(ticket: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/add`, ticket).pipe(

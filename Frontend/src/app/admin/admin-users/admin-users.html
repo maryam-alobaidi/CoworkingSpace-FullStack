@@ -48,19 +48,7 @@
         </div>
     </div>
 
-    <div class="row g-4"> 
-        <div class="col-12">
-            <div class="card border-0 shadow-sm p-4 h-100 bg-primary-subtle">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold text-dark m-0">All System Accounts</h5>
-                    <button class="btn btn-sm btn-outline-success d-flex align-items-center gap-1"
-                    data-bs-toggle="modal" 
-                    data-bs-target="#addUserModal">
-                        ➕ Add User
-                    </button>
-                </div>
-                  
- 
+    
            <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
                <!-- input for search -->
                 <div class="input-group" style="max-width: 350px;">
@@ -92,6 +80,18 @@
                 
             </div>
   </div>
+    <div class="row g-4"> 
+        <div class="col-12">
+            <div class="card custom-table-card border-0 shadow-sm p-4 h-100 ">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-dark m-0">All System Accounts</h5>
+                    <button class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1"
+                    data-bs-toggle="modal" 
+                    data-bs-target="#addUserModal">
+                        ➕ Add User
+                    </button>
+                </div>
+                  
                 
                <div class="table-responsive">
     <table class="table table-hover align-middle m-0 bg-white rounded shadow-sm">
@@ -101,7 +101,7 @@
                 <th>Email Address</th>
                 <th>Join Date</th>
                 <th>Role</th>
-                <th>Status</th> <!-- 🌟 أضفنا عمود الحالة -->
+                <th>Status</th> 
                 <th class="text-end pe-3">Actions</th>
             </tr>
         </thead>
@@ -116,7 +116,7 @@
                                  style="width: 32px; height: 32px; font-size: 0.9rem;">
                                 {{ user.fullName.charAt(0).toUpperCase() }}
                             </div>
-                            <!-- 🌟 يظهر خط شطب على الاسم إذا كان محظوراً -->
+                           
                             <span [class.text-decoration-line-through]="user.isSuspended">
                                 {{ user.fullName }}
                             </span>
@@ -132,7 +132,7 @@
                             {{ user.roleId === Role.Admin ? 'Admin' : 'Member' }}
                         </span>
                     </td>
-                    <!-- 🌟 عمود الحالة الجديد -->
+                  
                     <td>
                         <span class="badge rounded-pill px-2 py-1 fs-7" [ngClass]="user.isSuspended ? 'bg-danger text-white' : 'bg-success text-white'">
                             {{ user.isSuspended ? 'Suspended' : 'Active' }}
@@ -142,7 +142,6 @@
                         <div class="d-flex justify-content-end gap-1">
                             <button class="btn btn-sm btn-link text-primary p-1" title="Edit User" data-bs-toggle="modal" data-bs-target="#editUserModal" (click)="onEditUser(user)">✏️</button>
                             
-                            <!-- 🌟 زر الحظر الديناميكي: يتغير شكله وعنوانه ووظيفته حسب حالة الحساب -->
                             @if (user.isSuspended) {
                                 <button class="btn btn-sm btn-link text-success p-1" title="Activate User" (click)="suspendUser(user)">
                                     ✅

@@ -66,7 +66,7 @@
   </div>
 
   <div class="row g-4">
-    @for (space of workSpaceService.workspaces().slice(0, 3); track space.id) {
+    @for (space of workSpaceList().slice(0, 3); track space.id) {
       <div class="col-12 col-md-4">
         <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden home-card">
           <div class="position-relative" style="height: 220px;">

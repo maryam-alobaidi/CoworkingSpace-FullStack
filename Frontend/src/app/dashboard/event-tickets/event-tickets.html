@@ -23,14 +23,16 @@
       
       @for (ticket of tickets(); track ticket.id) {
         <div class="col">
+          <!-- 🌟 تحديث 1: دعم حالتي Complete و Completed لتلوين إطار التذكرة -->
           <div class="card h-100 shadow-sm border-0 border-top border-4 rounded-3 rounded-top-3"
-               [ngClass]="ticket.paymentStatus === 'Completed' ? 'border-primary' : 'border-warning'">
+               [ngClass]="(ticket.paymentStatus === 'Completed' || ticket.paymentStatus === 'Complete') ? 'border-success' : 'border-warning'">
             
             <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center pt-3 px-3">
               <span class="text-secondary small fw-semibold">Ticket: #{{ ticket.id }}</span>
+              <!-- 🌟 تحديث 2: دعم حالتي Complete و Completed لعرض الشارة الخضراء الفعالة -->
               <span class="badge rounded-pill px-3 py-2 fw-bold"
-                    [ngClass]="ticket.paymentStatus === 'Completed' ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning'">
-                {{ ticket.paymentStatus === 'Completed' ? '🎟️ Valid' : '⏳ Pending' }}
+                    [ngClass]="(ticket.paymentStatus === 'Completed' || ticket.paymentStatus === 'Complete') ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning'">
+                {{ (ticket.paymentStatus === 'Completed' || ticket.paymentStatus === 'Complete') ? '🎟️ Valid' : '⏳ Pending' }}
               </span>
             </div>
 
@@ -45,14 +47,17 @@
                   <span class="text-muted">Purchase Date:</span>
                   <span class="fw-semibold text-dark">{{ ticket.purchaseDate | date:'longDate' }}</span>
                 </div>
-                
-               
 
                 <div class="list-group-item bg-transparent d-flex justify-content-between border-0 px-0 py-2">
                   <span class="text-muted">Payment Status:</span>
-                  <span class="fw-bold" [ngClass]="ticket.paymentStatus === 'Completed' ? 'text-success' : 'text-warning'">
-                    {{ ticket.paymentStatus === 'Completed' ? 'Paid' : 'Pending Payment' }}
+                    @if (ticket.totalPrice === 0) {
+                      <span class="fw-bold text-success">
+                    Free
                   </span>
+                    }@else
+                  {<span class="fw-bold" [ngClass]="(ticket.paymentStatus === 'Completed' || ticket.paymentStatus === 'Complete') ? 'text-success' : 'text-warning'">
+                    {{ (ticket.paymentStatus === 'Completed' || ticket.paymentStatus === 'Complete') ? 'Paid' : 'Pending Payment' }}
+                  </span>}
                 </div>
               </div>
             </div>
@@ -60,23 +65,28 @@
             <div class="card-footer bg-light border-0 d-flex justify-content-between align-items-center p-3 mt-auto">
               <div>
                 <small class="text-uppercase text-muted d-block tracking-wider" style="font-size: 0.7rem;">Total Cost</small>
-                <span class="fs-4 fw-bold text-dark">${{ ticket.totalPrice }}</span>
+                <!-- 🌟 تحديث 4: عرض كلمة Free الخضراء الأنيقة إذا كان السعر 0 -->
+                @if (ticket.totalPrice === 0) {
+                  <span class="fs-5 fw-extrabold text-success">Free Entry</span>
+                } @else {
+                  <span class="fs-4 fw-bold text-dark">${{ ticket.totalPrice }}</span>
+                }
               </div>
               
               <div class="actions-section">
-                @if (ticket.paymentStatus === 'Pending') {
+                @if (ticket.paymentStatus === 'Pending' && ticket.totalPrice > 0) {
                   <button (click)="payTicket(ticket.id)" class="btn btn-warning btn-sm px-3 py-2 fw-semibold text-dark rounded-2 shadow-sm">
                     💳 Pay Ticket
                   </button>
                 }
-               @if (ticket.paymentStatus === 'Completed') {
-                <button class="btn btn-outline-secondary btn-sm rounded-pill px-3"
-        (click)="openEventReceipt(ticket)"
-        data-bs-toggle="modal"
-        data-bs-target="#eventReceiptModal">
-  View Ticket
-</button>
-              }
+                @if (ticket.paymentStatus === 'Completed' || ticket.paymentStatus === 'Complete') {
+                  <button class="btn btn-outline-secondary btn-sm rounded-pill px-3"
+                          (click)="openEventReceipt(ticket)"
+                          data-bs-toggle="modal"
+                          data-bs-target="#eventReceiptModal">
+                    View Ticket
+                  </button>
+                }
               </div>
             </div>
 
@@ -129,11 +139,11 @@
             </div>
             <div class="col-6 text-end">
               <span class="text-muted d-block">Booking Date:</span>
-              <span class="fw-bold text-dark">{{ selectedEvent().Pa | date:'mediumDate' }}</span>
+              <!-- 🌟 تحديث 7: حل مشكلة الخاصية المكسورة .Pa واستبدالها بـ .purchaseDate -->
+              <span class="fw-bold text-dark">{{ selectedEvent().purchaseDate | date:'mediumDate' }}</span>
             </div>
           </div>
 
-          <!-- بطاقة تفاصيل الفعالية (تطابق تصميم الحجوزات) -->
           <div class="bg-light p-3 rounded-3 mb-4">
             <h6 class="fw-bold text-dark mb-3">Event Summary</h6>
             
@@ -159,7 +169,7 @@
           <!-- القسم السفلي والسعر -->
           <div class="d-flex justify-content-between align-items-center border-top pt-3">
             <div>
-              @if (selectedEvent().totalPrice === 0) {
+              @if (selectedEvent().ticketPrice == 0 || selectedEvent().ticketPrice == '0') {
                 <span class="badge bg-success-subtle text-success px-3 py-2 fw-bold">FREE ENTRY</span>
               } @else {
                 <span class="badge bg-primary-subtle text-primary px-3 py-2 fw-bold">PAID</span>

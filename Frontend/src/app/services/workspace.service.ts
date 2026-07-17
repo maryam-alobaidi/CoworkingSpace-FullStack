@@ -20,9 +20,7 @@ export class WorkSpaceService{
     };
 
   getWorkSpace():Observable<WorkSpace[]>{
-
-  
-   return this.http.get<WorkSpace[]>(this.apiUrl).pipe(
+   return this.http.get<WorkSpace[]>(`${this.apiUrl}/getAll`).pipe(
       
       map(data => data.map(space => ({
         ...space,
@@ -40,6 +38,19 @@ export class WorkSpaceService{
         ...space,imageUrl:this.imageMap[space.spaceType] || 'https://picsum.photos/seed/default/600/400'
       }))
    )
+  }
+
+   getTotalWorkSpace():Observable<WorkSpace[]>{
+     return this.http.get<WorkSpace[]>(`${this.apiUrl}/getAll`);
+  }
+
+
+  createSpace(data: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/add`, data, { responseType: 'text' });
+  }
+
+  updateSpace(Id:number|null,data:any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/update/${Id}`, data, { responseType: 'text' });
   }
 
 

@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { Payments } from '../../services/payments';
-import { CurrencyPipe, NgClass } from '@angular/common';
+import { CurrencyPipe, DatePipe, NgClass } from '@angular/common';
 import { SpaceBooking } from '../../services/space-booking';
 import { EventSevice } from '../../services/event.service';
 import { Auth } from '../../services/auth';
@@ -12,7 +12,7 @@ import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-admin-overview',
-  imports: [CurrencyPipe,NgClass,RouterLink],
+  imports: [CurrencyPipe,NgClass,RouterLink,DatePipe],
   templateUrl: './admin-overview.html',
   styleUrl: './admin-overview.scss',
 })

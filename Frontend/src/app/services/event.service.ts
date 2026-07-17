@@ -26,6 +26,24 @@ export class EventSevice {
       9: '/images/eventSpace9.jpg',
       };
 
+   getAllUpcomingEvents():Observable<EventModel[]>{
+
+      return this.http.get<EventModel[]>(`${this.apiUrl}/getAllUpcomingEvents`).pipe(
+         map(data => data.map(ev => {
+       
+        const randomId = Math.floor(Math.random() * 9) + 1;
+
+        return {
+          ...ev,
+          
+          imageUrl:this.imageMap[randomId] || 'https://picsum.photos/seed/default/600/400'
+        };
+      })),
+      
+      tap(data => this.events.set(data))
+    );  
+   }
+
    getAllEvents():Observable<EventModel[]>{
 
       return this.http.get<EventModel[]>(`${this.apiUrl}/getAll`).pipe(
@@ -44,8 +62,8 @@ export class EventSevice {
     );  
    }
    
-
-  getEventDetailsById(id: any): Observable<EventModel> {
+   
+   getEventDetailsById(id: any): Observable<EventModel> {
   return this.http.get<EventModel>(`${this.apiUrl}/get/${id}`).pipe(
     map((ev: any) => {
      
@@ -60,9 +78,18 @@ export class EventSevice {
   );
   }
 
-  getUpcomingEvents():Observable<{countUpcomingEvents : number}>{
+   getUpcomingEvents():Observable<{countUpcomingEvents : number}>{
 
     return this.http.get<{countUpcomingEvents:number}>(`${this.apiUrl}/upcoming-events`);
+  }
+
+   updateEventService(Id:number,eventToUpdate:EventModel):Observable<any>{
+    return this.http.put<any>(`${this.apiUrl}/update/${Id}`, eventToUpdate);
+  }
+
+   addNewEvent(eventToAdd: EventModel): Observable<any> {
+
+  return this.http.post(`${this.apiUrl}/add`, eventToAdd, { responseType: 'text' });
   }
 
  

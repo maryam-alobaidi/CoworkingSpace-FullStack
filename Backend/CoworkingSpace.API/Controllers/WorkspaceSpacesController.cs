@@ -10,7 +10,7 @@ namespace CoworkingSpace.API.Controllers
     public class WorkspaceSpacesController : ControllerBase
     {
 
-        [HttpGet]
+        [HttpGet("getAll")]
         public async Task<IActionResult> Get()
         {
             try
@@ -53,7 +53,7 @@ namespace CoworkingSpace.API.Controllers
 
         }
 
-        [HttpPost]
+        [HttpPost("add")]
         public async Task<IActionResult> Post([FromBody] workspaceSpaceModel model)
         {
             try
@@ -86,7 +86,8 @@ namespace CoworkingSpace.API.Controllers
 
         }
 
-        [HttpDelete("{id}")]
+
+        [HttpDelete("delete/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             try
@@ -110,7 +111,7 @@ namespace CoworkingSpace.API.Controllers
         }
 
 
-        [HttpPut("{id}")]
+        [HttpPut("update/{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] workspaceSpaceModel model)
         {
             try
@@ -123,18 +124,26 @@ namespace CoworkingSpace.API.Controllers
                 {
                     return BadRequest("Workspace space data is required.");
                 }
-                clsWorkspaceSpaces workspaceSpace = new clsWorkspaceSpaces
+
+                var space = await clsWorkspaceSpaces.Find(id);
+                if (space == null)
                 {
-                    Id = id,
-                    Title = model.Title,
-                    Description = model.Description,
-                    SpaceType = model.SpaceType,
-                    PricePerHour = model.PricePerHour,
-                    PricePerDay = model.PricePerDay,
-                    Capacity = model.Capacity,
-                    IsAvailable = model.IsAvailable
-                };
-                bool isUpdated = await workspaceSpace.Save();
+                    return BadRequest("Workspace not found.");
+                }
+
+
+                space.Id = id;
+                space.Title = model.Title;
+                space.Description = model.Description;
+                space.SpaceType = model.SpaceType;
+                space.PricePerHour = model.PricePerHour;
+                space.PricePerDay = model.PricePerDay;
+                space.Capacity = model.Capacity;
+                     space.IsAvailable = model.IsAvailable;
+                    
+                
+               
+                bool isUpdated = await space.Save();
                 if (!isUpdated)
                 {
                     return StatusCode(500, "An error occurred while updating the workspace space details.");

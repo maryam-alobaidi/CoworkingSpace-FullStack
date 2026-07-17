@@ -17,52 +17,92 @@ namespace CoworkingSpace.API.Controllers
             _emailService = emailService;
         }
 
-        [HttpPost("add")]
-        public async Task<IActionResult> Add([FromBody] CreateTicketEventModel model)
-        {
-            try
+
+            [HttpPost("add")]
+            public async Task<IActionResult> Add([FromBody] CreateTicketEventModel model)
             {
-                if (model == null) return BadRequest("Ticket booking data is required.");
-
-                var user = clsUsers.Find(model.UserId);
-                if (user == null) return NotFound("User not found.");
-
-                var eventDetails = clsEvents.Find(model.EventId);
-                if (eventDetails == null) return NotFound("Event not found.");
-
-                // 1. حساب السعر الإجمالي الكلي للعملية
-                decimal totalCalculatedPrice = eventDetails.TicketPrice * model.Quantity;
-
-                // قائمة للاحتفاظ بـ IDs التذاكر التي سيتم إنشاؤها
-                List<int> savedTicketIds = new List<int>();
-
-                // 2. تكرار عملية الحفظ بناءً على الكمية المطلوبة
-                for (int i = 0; i < model.Quantity; i++)
+                try
                 {
-                    clsEventTickets singleTicket = new clsEventTickets
-                    {
-                        EventId = model.EventId,
-                        UserId = model.UserId,
-                        PurchaseDate = DateTime.Now,
-                        PaymentStatus = "Pending"
-                    };
+                    if (model == null) return BadRequest("Ticket booking data is required.");
 
-                    if (await singleTicket.Save())
+                    var user = clsUsers.Find(model.UserId);
+                    if (user == null) return NotFound("User not found.");
+
+                    var eventDetails = clsEvents.Find(model.EventId);
+                    if (eventDetails == null) return NotFound("Event not found.");
+
+                    // 1. حساب السعر الإجمالي الكلي للعملية
+                    decimal totalCalculatedPrice = eventDetails.TicketPrice * model.Quantity;
+
+                    // قائمة للاحتفاظ بـ IDs التذاكر التي سيتم إنشاؤها
+                    List<int> savedTicketIds = new List<int>();
+
+                    // 2. تكرار عملية الحفظ بناءً على الكمية المطلوبة
+                    for (int i = 0; i < model.Quantity; i++)
                     {
-                        savedTicketIds.Add(singleTicket.Id);
+                        // أ: إذا كانت الفعالية مجانية
+                        if (eventDetails.TicketPrice == 0)
+                        {
+                            clsEventTickets singleTicketFree = new clsEventTickets
+                            {
+                                EventId = model.EventId,
+                                UserId = model.UserId,
+                                PurchaseDate = DateTime.Now,
+                                PaymentStatus = "Complete" // مجانية ومكتملة فوراً
+                            };
+
+                            if (await singleTicketFree.Save())
+                            {
+                                savedTicketIds.Add(singleTicketFree.Id);
+                            }
+
+                            // 🌟 حل مشكلة التكرار: نستخدم continue لكي ننتقل للخطوة التالية في الـ Loop ونمنع إنشاء تذكرة Pending
+                            continue;
+                        }
+
+                        // ب: إذا كانت الفعالية مدفوعة (يتم إنشاء تذكرة معلقة بالدفع)
+                        clsEventTickets singleTicket = new clsEventTickets
+                        {
+                            EventId = model.EventId,
+                            UserId = model.UserId,
+                            PurchaseDate = DateTime.Now,
+                            PaymentStatus = "Pending"
+                        };
+
+                        if (await singleTicket.Save())
+                        {
+                            savedTicketIds.Add(singleTicket.Id);
+                        }
                     }
-                }
 
-                if (savedTicketIds.Any())
-                {
-                    int primaryTicketId = savedTicketIds.First();
-                    string ticketIdsString = string.Join(",", savedTicketIds);
-
-                    // 3. إعداد جلسة Stripe ممرر بها الكمية والسعر بشكل احترافي
-                    var options = new Stripe.Checkout.SessionCreateOptions
+                    if (savedTicketIds.Any())
                     {
-                        PaymentMethodTypes = new List<string> { "card" },
-                        LineItems = new List<Stripe.Checkout.SessionLineItemOptions>
+                        int primaryTicketId = savedTicketIds.First();
+                        string ticketIdsString = string.Join(",", savedTicketIds);
+
+                        // 🌟 3. إذا كانت الفعالية مجانية، نتخطى Stripe بالكامل ونرجع نجاح فوري
+                        if (eventDetails.TicketPrice == 0)
+                        {
+                            // تقليص المقاعد المتاحة فوراً لأن التذاكر المجانية تم تأكيدها واكتملت
+                            eventDetails.AvailableSeats -= model.Quantity;
+                            await eventDetails.Save();
+
+                            return Ok(new
+                            {
+                                EventTicketId = primaryTicketId,
+                                TicketIds = savedTicketIds,
+                                Amount = 0,
+                                ReferenceType = "Event",
+                                SessionUrl = "", // نرسل رابط فارغ لكي يعلم الأنجولار أنه لا يوجد دفع Stripe
+                                Message = $"{model.Quantity} Free ticket bookings created and confirmed successfully!"
+                            });
+                        }
+
+                        // 🌟 4. إذا كانت الفعالية مدفوعة، نقوم بتجهيز بوابة Stripe كالمعتاد
+                        var options = new Stripe.Checkout.SessionCreateOptions
+                        {
+                            PaymentMethodTypes = new List<string> { "card" },
+                            LineItems = new List<Stripe.Checkout.SessionLineItemOptions>
                         {
                             new Stripe.Checkout.SessionLineItemOptions
                             {
@@ -79,154 +119,143 @@ namespace CoworkingSpace.API.Controllers
                                 Quantity = model.Quantity,
                             },
                         },
-                        Mode = "payment",
-
-                        // 🌟 تحديث رابط النجاح لتمرير كمية التذاكر الكلية بدقة للأنجولار
-                        SuccessUrl = $"http://localhost:4200/payment-success?ticketIds={ticketIdsString}&referenceType=Event&qty={model.Quantity}",
-                        CancelUrl = $"http://localhost:4200/payment-failed?ticketId={primaryTicketId}",
-
-                        Metadata = new Dictionary<string, string>
+                            Mode = "payment",
+                            SuccessUrl = $"http://localhost:4200/payment-success?ticketIds={ticketIdsString}&referenceType=Event&qty={model.Quantity}",
+                            CancelUrl = $"http://localhost:4200/payment-failed?ticketId={primaryTicketId}",
+                            Metadata = new Dictionary<string, string>
                         {
                             { "Type", "Event" },
                             { "TicketIds", ticketIdsString },
                             { "Quantity", model.Quantity.ToString() }
                         }
-                    };
+                        };
 
-                    var service = new Stripe.Checkout.SessionService();
-                    Stripe.Checkout.Session session = await service.CreateAsync(options);
+                        var service = new Stripe.Checkout.SessionService();
+                        Stripe.Checkout.Session session = await service.CreateAsync(options);
 
-                    return Ok(new
-                    {
-                        EventTicketId = primaryTicketId,
-                        TicketIds = savedTicketIds,
-                        Amount = totalCalculatedPrice,
-                        ReferenceType = "Event",
-                        SessionUrl = session.Url,
-                        Message = $"{model.Quantity} Ticket bookings created successfully, redirecting to payment."
-                    });
-                }
-
-                return StatusCode(500, "Could not save the ticket bookings.");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error: {ex.Message}");
-            }
-        }
-
-
-
-        [HttpPost("confirm-payment")]
-        public async Task<IActionResult> ConfirmPayment([FromBody] ConfirmEventPaymentModel model)
-        {
-            try
-            {
-                if (model == null) return BadRequest("Confirmation data is required.");
-                if (string.IsNullOrEmpty(model.TicketIds)) return BadRequest("No ticket IDs provided.");
-
-                var ticketIdList = model.TicketIds.Split(',')
-                                                    .Select(id => int.TryParse(id, out var parsedId) ? parsedId : 0)
-                                                    .Where(id => id > 0)
-                                                    .ToList();
-
-                if (!ticketIdList.Any()) return BadRequest("Invalid ticket IDs format.");
-
-                int eventId = 0;
-                int userId = 0;
-                bool processingSuccessful = false;
-                clsEventTickets businessTicket = null;
-
-                foreach (int ticketId in ticketIdList)
-                {
-                    var ticketModel = await clsEventTickets.FindWithReturnclass(ticketId);
-
-                    if (ticketModel != null)
-                    {
-                        eventId = ticketModel.EventId;
-                        userId = ticketModel.UserId;
-
-                        // 🌟 السيناريو الأول: التذكرة ما زالت معلقة (نقوم بتحديثها حالاً)
-                        if (ticketModel.PaymentStatus == "Pending")
+                        return Ok(new
                         {
-                            businessTicket = new clsEventTickets
-                            {
-                              
-                               
-                                Id = ticketModel.Id,
-                                EventId = ticketModel.EventId,
-                                UserId = ticketModel.UserId,
-                                PurchaseDate = ticketModel.PurchaseDate == default(DateTime) ? DateTime.Now : ticketModel.PurchaseDate,
-                                PaymentStatus = "Completed",
-                                TransactionId = model.TransactionId,
-                                Mode = clsEventTickets.enMode.update
-                            };
+                            EventTicketId = primaryTicketId,
+                            TicketIds = savedTicketIds,
+                            Amount = totalCalculatedPrice,
+                            ReferenceType = "Event",
+                            SessionUrl = session.Url, // يمرر الرابط للأنجولار ليقوم بالتحويل لصفحة الدفع
+                            Message = $"{model.Quantity} Ticket bookings created successfully, redirecting to payment."
+                        });
+                    }
 
-                            if (await businessTicket.Save())
+                    return StatusCode(500, "Could not save the ticket bookings.");
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(500, $"Error: {ex.Message}");
+                }
+            }
+
+            [HttpPost("confirm-payment")]
+            public async Task<IActionResult> ConfirmPayment([FromBody] ConfirmEventPaymentModel model)
+            {
+                try
+                {
+                    if (model == null) return BadRequest("Confirmation data is required.");
+                    if (string.IsNullOrEmpty(model.TicketIds)) return BadRequest("No ticket IDs provided.");
+
+                    // تفكيك أرقام الـ IDs والتأكد من تحويلها لأرقام برمجية آمنة
+                    var ticketIdList = model.TicketIds.Split(',')
+                                                      .Select(id => int.TryParse(id, out var parsedId) ? parsedId : 0)
+                                                      .Where(id => id > 0)
+                                                      .ToList();
+
+                    if (!ticketIdList.Any()) return BadRequest("Invalid ticket IDs format.");
+
+                    int eventId = 0;
+                    int userId = 0;
+                    bool processingSuccessful = false;
+                    clsEventTickets businessTicket = null;
+
+                    foreach (int ticketId in ticketIdList)
+                    {
+                        var ticketModel = await clsEventTickets.FindWithReturnclass(ticketId);
+
+                        if (ticketModel != null)
+                        {
+                            eventId = ticketModel.EventId;
+                            userId = ticketModel.UserId;
+
+                            // 🌟 السيناريو الأول: التذكرة ما زالت معلقة (Pending) - نقوم بتحديثها فوراً
+                            if (ticketModel.PaymentStatus == "Pending")
+                            {
+                                businessTicket = new clsEventTickets
+                                {
+                                    Id = ticketModel.Id,
+                                    EventId = ticketModel.EventId,
+                                    UserId = ticketModel.UserId,
+                                    PurchaseDate = ticketModel.PurchaseDate == default(DateTime) ? DateTime.Now : ticketModel.PurchaseDate,
+                                    PaymentStatus = "Complete",
+                                    TransactionId = model.TransactionId,
+                                    Mode = clsEventTickets.enMode.update
+                                };
+
+                                if (await businessTicket.Save())
+                                {
+                                    processingSuccessful = true;
+                                }
+                            }
+                            // 🌟 السيناريو الثاني: الـ Webhook كان أسرع وقام بتفعيلها لـ Completed مسبقاً
+                            else if (ticketModel.PaymentStatus == "Completed" || ticketModel.PaymentStatus == "Complete")
                             {
                                 processingSuccessful = true;
+                                businessTicket = ticketModel; // نجهز الكائن لغايات الإيميل الاحتياطي
                             }
                         }
-                        // 🌟 السيناريو الثاني: الـ Webhook كان أسرع وحولها بالفعل إلى Completed
-                        else if (ticketModel.PaymentStatus == "Completed")
-                        {
-                            // نعتبر العملية ناجحة تماماً ولا داعي لرمي خطأ للمستخدم
-                            processingSuccessful = true;
-
-                            // نجهز الكائن لغايات إرسال الإيميل الاحتياطي إن لزم الأمر
-                            businessTicket = ticketModel;
-                        }
-                    }
-                }
-
-                // إذا تم التحديث بنجاح أو كانت التذاكر مدفوعة بالفعل ومؤكدة خلف الكواليس
-                if (processingSuccessful)
-                {
-                    // تحديث المقاعد احتياطياً في حال لم يقم الـ Webhook بخصمها بعد
-                    if (eventId > 0)
-                    {
-                        var currentEvent = clsEvents.Find(eventId);
-                        if (currentEvent != null)
-                        {
-                            // نتحقق أولاً لمنع الخصم المزدوج للمقاعد إذا خصمها الـ Webhook
-                            // (يمكنكِ تعديل الحسبة بناءً على منطق البزنس الخاص بكِ)
-                            int quantityToDeduct = model.Quantity > 0 ? model.Quantity : ticketIdList.Count;
-
-                            // هنا نخصم فقط إذا أردنا التأكيد الصارم من شاشة الفرونت إند
-                            // currentEvent.AvailableSeats = currentEvent.AvailableSeats - quantityToDeduct;
-                            // await currentEvent.Save();
-                        }
                     }
 
-                    // إرسال الإيميل بأمان
-                    if (userId > 0 && businessTicket != null)
+                    if (processingSuccessful)
                     {
-                        try
+                        // جلب الفعالية لتحديث المقاعد المتاحة (إن لم يتم تحديثها سابقاً)
+                        if (eventId > 0)
                         {
-                            var user = clsUsers.Find(userId);
-                            if (user != null)
+                            var currentEvent = clsEvents.Find(eventId);
+                            if (currentEvent != null)
                             {
-                                await businessTicket.SaveTicketWithEmailLog(user.Email, user.FullName, _emailService);
+                                int quantityToDeduct = model.Quantity > 0 ? model.Quantity : ticketIdList.Count;
+                                // فكي التعليق بالأسفل إذا كنتِ تعتمدين على تفعيل خصم المقاعد لحظة تأكيد الدفع فقط:
+                                // currentEvent.AvailableSeats = currentEvent.AvailableSeats - quantityToDeduct;
+                                // await currentEvent.Save();
                             }
                         }
-                        catch (Exception emailEx)
+
+                        // إرسال الإيميل للمستخدم بأمان دون إفساد معاملة النجاح العامة
+                        if (userId > 0 && businessTicket != null)
                         {
-                            Console.WriteLine($"⚠️ Email logging failed in ConfirmPayment: {emailEx.Message}");
+                            try
+                            {
+                                var user = clsUsers.Find(userId);
+                                if (user != null)
+                                {
+                                    // استدعاء دالة بناء التذاكر وإرسالها المضمنة بداخل كلاس البزنس الخاص بكِ
+                                    await businessTicket.SaveTicketWithEmailLog(user.Email, user.FullName, _emailService);
+                                }
+                            }
+                            catch (Exception emailEx)
+                            {
+                                // نسجل الخطأ في الكونسول لتلافي فشل إرجاع النجاح الكلي للمستخدم بسبب سيرفر الإيميل
+                                Console.WriteLine($"⚠️ Email sending failed in ConfirmPayment: {emailEx.Message}");
+                            }
                         }
+
+                        return Ok(new { message = $"{ticketIdList.Count} Tickets confirmed successfully (either newly or via webhook)." });
                     }
 
-                    return Ok(new { message = $"{ticketIdList.Count} Tickets confirmed successfully (either newly or via webhook)." });
+                    return StatusCode(400, "Tickets not found or status could not be verified.");
                 }
-
-                return StatusCode(400, "Tickets not found or status could not be verified.");
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"💥 CRITICAL ERROR in ConfirmPayment: {ex.Message}");
+                    return StatusCode(500, $"Error during confirmation: {ex.Message}");
+                }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"💥 CRITICAL ERROR in ConfirmPayment: {ex.Message}");
-                return StatusCode(500, $"Error during confirmation: {ex.Message}");
-            }
-        }
-
+        
 
 
 
@@ -309,6 +338,8 @@ namespace CoworkingSpace.API.Controllers
                 return StatusCode(500, "Error:During get the data.");
             }
         }
+
+
 
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> Delete(int Id)

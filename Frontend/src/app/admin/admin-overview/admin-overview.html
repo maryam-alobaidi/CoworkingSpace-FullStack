@@ -65,10 +65,10 @@
 
  <div class="row g-4"> 
   <div class="col-12">
-    <div class="card border-0 shadow-sm bg-white p-4 h-100 bg-primary-subtle">
+    <div class="card border-0 shadow-sm bg-white p-4 h-100 custom-table-card ">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="fw-bold text-dark m-0">Recent Space Reservations</h5>
-        <button class="btn btn-sm btn-outline-success" routerLink="/admin/spaces">View All</button>
+        <button class="btn btn-sm btn-outline-primary" routerLink="/admin/spaces">View All</button>
       </div>
       <div class="table-responsive">
         <table class="table table-hover align-middle m-0">
@@ -86,7 +86,7 @@
               <tr>
                 <td class="fw-bold text-dark">{{ booking.userName }}</td>
                 <td>{{ booking.spaceName }}</td>
-                <td>{{ booking.bookingDate }}</td> 
+                <td>{{ booking.bookingDate | date:'mediumDate' }}</td> 
                 <td>{{ booking.price | currency }}</td>
                 <td>
                   <span class="badge" [ngClass]="{
@@ -104,10 +104,10 @@
   </div>
 
  <div class="col-12"> 
-  <div class="card border-0 shadow-sm bg-white p-4 h-100 bg-primary-subtle">
+  <div class="card border-0 shadow-sm bg-white p-4 h-100 custom-table-card ">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h5 class="fw-bold text-dark m-0">Recent Event Tickets</h5>
-      <button class="btn btn-sm btn-outline-success" routerLink="/admin/events">View All</button>
+      <button class="btn btn-sm btn-outline-primary" routerLink="/admin/events">View All</button>
     </div>
     <div class="table-responsive">
       <table class="table table-hover align-middle m-0">
@@ -125,7 +125,7 @@
             <tr>
               <td class="fw-bold text-dark">{{ ticket.userName }}</td>
               <td>{{ ticket.eventName }}</td>
-              <td>{{ ticket.purchaseDate  }}</td> <td>{{ ticket.price | currency }}</td>
+              <td>{{ ticket.purchaseDate | date:'mediumDate'  }}</td> <td>{{ ticket.price | currency }}</td>
               <td>
                 <span class="badge" [ngClass]="{
                   'bg-success-subtle text-success': ticket.status === 'Completed',

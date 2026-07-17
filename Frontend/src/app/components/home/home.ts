@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { WorkSpaceService } from '../../services/workspace.service';
 import { EventSevice } from '../../services/event.service';
 import { DatePipe } from '@angular/common';
@@ -19,12 +19,20 @@ export class Home {
    public eventService=inject(EventSevice); 
    public authService=inject(Auth);
    private toastr=inject(ToastrService);
+   workSpaceList=signal<any|null>(null);
 
    public today = new Date();
 
   ngOnInit(): void {
     
-    this.workSpaceService.getWorkSpace().subscribe();
+    this.workSpaceService.getWorkSpace().subscribe({
+      next:(data)=>{
+        const availableSpaces = data.filter(space => space.isAvailable === true);
+        this.workSpaceList.set(availableSpaces)
+      },
+      error: (err) => console.error('Error fetching data:', err)
+      });
+     
     this.eventService.getAllEvents().subscribe();
   }
 

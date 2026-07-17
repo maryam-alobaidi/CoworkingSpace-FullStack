@@ -38,8 +38,6 @@ export class EventTickets {
       this.isLoading.set(false);
       return;
     }
-
-   
     this.isLoading.set(true);
     this.eventTicketService.getUserTickets(userId).subscribe({
       next: (data) => {

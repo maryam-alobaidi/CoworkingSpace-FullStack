@@ -20,7 +20,6 @@ export class EventsList implements OnInit{
   public today=new Date();
 
   ngOnInit(): void {
-   
     this.eventService.getAllEvents().subscribe(
       {
            error: (err) => console.error('Error fetching data:', err)

@@ -1,1 +1,325 @@
-<p>admin-events works!</p>
+<div class="container-fluid py-4">
+  <!-- title of page -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-dark m-0">Event Management</h2>
+  </div>
+
+  <!-- the row of card -->
+  <div class="row g-3 mb-4">
+    <!-- the card total events-->
+    <div class="col-12 col-sm-6 col-md-3">
+      <div class="card shadow-sm border-0 h-100" style="border-left: 4px solid #0dcaf0 !important;">
+        <div class="card-body d-flex align-items-center justify-content-between">
+          <div>
+            <p class="text-muted small mb-1 fw-semibold text-uppercase">Total Events</p>
+            <h3 class="fw-bold m-0 text-dark">{{ totalEvents() }}</h3>
+          </div>
+          <div class="rounded-circle p-3 bg-info bg-opacity-10 text-info fs-4">📅</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- the card the next events-->
+    <div class="col-12 col-sm-6 col-md-3">
+      <div class="card shadow-sm border-0 h-100" style="border-left: 4px solid #ebd565 !important;">
+        <div class="card-body d-flex align-items-center justify-content-between">
+          <div>
+            <p class="text-muted small mb-1 fw-semibold text-uppercase">Upcoming Events</p>
+            <h3 class="fw-bold m-0 text-dark">{{ upcomingEvents() }}</h3>
+          </div>
+          <div class="rounded-circle p-3 bg-success bg-opacity-10 text-success fs-4">⏳</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- the finshed events-->
+    <div class="col-12 col-sm-6 col-md-3">
+      <div class="card shadow-sm border-0 h-100" style="border-left: 4px solid #6c757d !important;">
+        <div class="card-body d-flex align-items-center justify-content-between">
+          <div>
+            <p class="text-muted small mb-1 fw-semibold text-uppercase">Past Events</p>
+            <h3 class="fw-bold m-0 text-dark">{{ pastEvents() }}</h3>
+          </div>
+          <div class="rounded-circle p-3 bg-secondary bg-opacity-10 text-secondary fs-4">📁</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 💰 Total Revenue Card -->
+    <div class="col-12 col-sm-6 col-md-3">
+      <div class="card shadow-sm border-0 h-100" style="border-left: 4px solid #198754 !important;">
+        <div class="card-body d-flex align-items-center justify-content-between">
+          <div>
+            <p class="text-muted small mb-1 fw-semibold text-uppercase">Total Revenue</p>
+            <h3 class="fw-bold m-0 text-dark">${{ totalRevenue() }}</h3>
+          </div>
+          <div class="rounded-circle p-3 bg-success bg-opacity-10 text-success fs-4">💰</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--(Search Bar) -->
+  <div class="row mb-4">
+    <div class="col-12 col-md-4">
+      <div class="input-group shadow-sm rounded">
+        <span class="input-group-text bg-white border-end-0 text-muted">🔍</span>
+        <input 
+          type="text" 
+          class="form-control border-start-0 ps-0" 
+          placeholder="Search event by name..."
+          [value]="searchTerm()"
+          (input)="onSearchChange($event)"
+        />
+      </div>
+    </div>
+  </div>
+
+ 
+  <div class="custom-table-card p-4 shadow-sm mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h4 class="fw-bold text-dark m-0">Events List</h4>
+      <button class="btn btn-sm btn-outline-primary d-flex align-items-center gap-2 shadow-sm"
+              data-bs-toggle="modal" 
+              data-bs-target="#addEventModal">
+        <span>➕</span> Add Event
+      </button>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th scope="col" class="py-3">Event Title</th>
+            <th scope="col" class="py-3">Date & Time</th>
+            <th scope="col" class="py-3 text-center">Ticket Price</th>
+            <th scope="col" class="py-3 text-center">Capacity</th>
+            <th scope="col" class="py-3 text-center">Available Seats</th>
+            <th scope="col" class="py-3 text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (event of filteredEvents(); track event.id) {
+            <tr>
+              <td class="fw-semibold text-dark">{{ event.title }}</td>
+            
+              <td>{{ event.eventDate | date:'mediumDate' }}</td>
+             @if (event.ticketPrice === 0) {
+                  <td class="  text-center" > <span class="badge rounded-pill px-3 text-center py-2 fs-7rounded-pill px-3 py-2 bg-success-subtle text-success">Free</span> </td>
+                } @else {
+                  <td class="text-center fw-bold text-success">${{ event.ticketPrice }}</td>
+                }
+              <td class="text-center text-muted">{{ event.maxAttendees }}</td>
+              <td class="text-center">
+                @if (event.availableSeats === 0) {
+                  <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2">Sold Out</span>
+                } @else {
+                  <span class="badge bg-info bg-opacity-10 text-info px-3 py-2">{{ event.availableSeats }} left</span>
+                }
+              </td>
+              <td class="text-center">
+                <button class="btn btn-sm btn-link text-primary p-1 fs-6" title="Edit Event" data-bs-toggle="modal" data-bs-target="#editEventModal" (click)="onEditEvent(event)">✏️</button>
+              </td>
+            </tr> 
+          } @empty {
+            <tr>
+              <td colspan="6" class="text-center py-5 text-muted">
+                <p class="mb-0 fs-5">⚠️ No events found matching your search.</p>
+              </td>
+            </tr>
+          } 
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- Edit Event Modal -->
+<div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      
+      <!-- رأس النافذة -->
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title fw-bold" id="editEventModalLabel">✏️ Edit Event</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" id="closeEditModalBtn"></button>
+      </div>
+
+      <!-- جسم النافذة (يعرض الحقول فقط إذا كان هناك فعالية محددة للتعديل) -->
+      @if (selectedEvent(); as currentEvent) {
+        <div class="modal-body p-4">
+          <form #editForm="ngForm" (ngSubmit)="updateEvent()">
+            
+            <!-- عنوان الفعالية -->
+            <div class="mb-3">
+              <label class="form-label fw-semibold text-secondary">Event Title</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                name="title"
+                [(ngModel)]="currentEvent.title" 
+                required 
+              />
+            </div>
+
+            <!-- تاريخ الفعالية -->
+            <div class="mb-3">
+              <label class="form-label fw-semibold text-secondary">Date & Time</label>
+              <input 
+                type="datetime-local" 
+                class="form-control" 
+                name="eventDate"
+                [(ngModel)]="currentEvent.eventDate" 
+                required 
+              />
+            </div>
+
+            <!-- سعر التذكرة والسعة الاستيعابية في سطر واحد -->
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold text-secondary">Ticket Price ($)</label>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  name="ticketPrice"
+                  [(ngModel)]="currentEvent.ticketPrice" 
+                  min="0"
+                  required 
+                />
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold text-secondary">Max Attendees</label>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  name="maxAttendees"
+                  [(ngModel)]="currentEvent.maxAttendees" 
+                  min="1"
+                  required 
+                />
+              </div>
+            </div>
+
+            <!-- وصف الفعالية -->
+            <div class="mb-3">
+              <label class="form-label fw-semibold text-secondary">Description</label>
+              <textarea 
+                class="form-control" 
+                rows="3" 
+                name="description"
+                [(ngModel)]="currentEvent.description">
+              </textarea>
+            </div>
+
+            <!-- أزرار التحكم بالأسفل -->
+            <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+              <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary px-4" [disabled]="!editForm.valid">Save Changes</button>
+            </div>
+
+          </form>
+        </div>
+      } @else {
+        <!-- مؤشر تحميل بسيط في حال تأخر تحميل البيانات -->
+        <div class="modal-body text-center py-5 text-muted">
+          <div class="spinner-border text-primary mb-3" role="status"></div>
+          <p class="mb-0">Loading event details...</p>
+        </div>
+      }
+
+    </div>
+  </div>
+</div>
+
+<!-- Add Event Modal -->
+<div class="modal fade" id="addEventModal" tabindex="-1" aria-labelledby="addEventModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      
+      <!-- رأس النافذة -->
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title fw-bold" id="addEventModalLabel">➕ Add New Event</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" id="closeAddModalBtn"></button>
+      </div>
+
+      <!-- جسم النافذة -->
+      <div class="modal-body p-4">
+        <form #addForm="ngForm" (ngSubmit)="createEvent()">
+          
+          <!-- عنوان الفعالية -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-secondary">Event Title</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              name="title"
+              placeholder="Enter event title"
+              [(ngModel)]="newEvent().title" 
+              required 
+            />
+          </div>
+
+          <!-- تاريخ ووقت الفعالية -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-secondary">Date & Time</label>
+            <input 
+              type="datetime-local" 
+              class="form-control" 
+              name="eventDate"
+              [(ngModel)]="newEvent().eventDate" 
+              required 
+            />
+          </div>
+
+          <!-- سعر التذكرة والسعة الاستيعابية في سطر واحد -->
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold text-secondary">Ticket Price ($)</label>
+              <input 
+                type="number" 
+                class="form-control" 
+                name="ticketPrice"
+                placeholder="0.00"
+                [(ngModel)]="newEvent().ticketPrice" 
+                min="0"
+                required 
+              />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold text-secondary">Max Attendees</label>
+              <input 
+                type="number" 
+                class="form-control" 
+                name="maxAttendees"
+                [(ngModel)]="newEvent().maxAttendees" 
+                min="1"
+                required 
+              />
+            </div>
+          </div>
+
+          <!-- وصف الفعالية -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-secondary">Description</label>
+            <textarea 
+              class="form-control" 
+              rows="3" 
+              name="description"
+              placeholder="Enter event details and description..."
+              [(ngModel)]="newEvent().description">
+            </textarea>
+          </div>
+
+          <!-- أزرار التحكم بالأسفل -->
+          <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn bg-success text-white px-4" [disabled]="!addForm.valid">Create Event</button>
+          </div>
+
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>

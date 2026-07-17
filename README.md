@@ -9,12 +9,16 @@ Frontend: Angular.
 
 ## System Previews
 
-Here are some snapshots of the system interface:
+Here are some snapshots of the system interface showing both public and admin views:
 
-<div style="display: flex; flex-wrap: wrap; gap: 10px;">
-  <img src="screenshots/Captura de pantalla 2026-07-17 220421.png" width="400" alt="Dashboard">
-  <img src="screenshots/Captura de pantalla 2026-07-17 220452.png" width="400" alt="Spaces List">
-  <img src="screenshots/Captura de pantalla 2026-07-17 220524.png" width="400" alt="Admin Controls">
+<div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+  <img src="screenshots/Captura de pantalla 2026-07-17 220421.png" width="300" alt="System Snapshot 1">
+  <img src="screenshots/Captura de pantalla 2026-07-17 220452.png" width="300" alt="System Snapshot 2">
+  <img src="screenshots/Captura de pantalla 2026-07-17 220524.png" width="300" alt="System Snapshot 3">
+  <img src="screenshots/Captura de pantalla 2026-07-17 220544.png" width="300" alt="System Snapshot 4">
+  <img src="screenshots/Captura de pantalla 2026-07-17 220626.png" width="300" alt="System Snapshot 5">
+  <img src="screenshots/Captura de pantalla 2026-07-17 220705.png" width="300" alt="System Snapshot 6">
+  <img src="screenshots/Captura de pantalla 2026-07-17 220726.png" width="300" alt="System Snapshot 7">
 </div>
 
 العربية

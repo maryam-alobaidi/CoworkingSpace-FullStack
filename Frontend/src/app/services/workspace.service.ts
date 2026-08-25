@@ -13,9 +13,9 @@ export class WorkSpaceService{
 
 
     private imageMap: { [key: string]: string } = {
-      'MeetingRoom': '/images/MeetingRoom.jpg',
-      'DedicatedDesk': '/images/DedicatedDesk.jpg',
-      'HotDesk': '/images/HotDesk.webp',
+      'Meeting Room': '/images/MeetingRoom.jpg',
+      'Dedicated Desk': '/images/DedicatedDesk.jpg',
+      'Hot Desk': '/images/HotDesk.webp',
       'Private Office': '/images/Private Office.avif'
     };
 

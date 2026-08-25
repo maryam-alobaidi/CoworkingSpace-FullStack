@@ -4,10 +4,11 @@ import { Navbar } from './components/navbar/navbar';
 import { Footer } from "./components/footer/footer";
 import { filter } from 'rxjs';
 import { CommonModule } from '@angular/common';
+import { AiChat } from "./components/ai-chat/ai-chat";
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Navbar, Footer,CommonModule],
+  imports: [RouterOutlet, Navbar, Footer, CommonModule, AiChat],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })

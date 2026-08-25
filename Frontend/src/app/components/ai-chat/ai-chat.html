@@ -1,0 +1,47 @@
+<div class="chat-widget-wrapper">
+  <!-- floating chat toggle buttom -->
+   <button class="chat-toggle-btn" (click)="toggleChat()">💬</button>
+
+   <!-- chat window show only when is open=true -->
+
+   @if(isOpen){
+    <div class="chat-box">
+      <!-- chat header -->
+       <div class="chat-header">
+        <span>Vantage AI 🤖</span>
+        <button class="close-btn" (click)="toggleChat()">✕</button>
+       </div>
+
+
+       <!-- message list -->
+        <div class="chat-messages">
+          @for (msg of messages; track msg) {
+         
+            <div [ngClass]="{'user-msg':msg.sender==='user','ai-msg':msg.sender==='ai','system-msg': msg.sender === 'system'}">
+              {{msg.text}}
+            </div>
+
+              @if (msg.linkUrl) {
+        
+        <a [href]="msg.linkUrl" class="chat-link-btn" target="_blank">👉 Open Page</a>
+      }
+          }
+
+              @if (isTyping) {
+                <div class="ai-msg typing-indicator">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+              }
+        </div>
+
+        <!-- input area -->
+        <div class="chat-input-area">
+          <input type="text" [(ngModel)]="userInput" (keyup.enter)="sendMessage()" placeholder="Type your message...">
+          <button (click)="sendMessage()">Send</button>
+        </div>
+
+    </div>
+   }
+</div>

@@ -35,6 +35,7 @@ builder.Services.AddCors(options =>
 builder.Services.Configure<EmailSettingsModel>(builder.Configuration.GetSection("EmailSettings"));
 // تسجيل خدمة الإيميل لتكون متاحة للحقن (Dependency Injection) في الـ Controllers
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IAiAgentService, AiAgentService>();
 
 var stripeSecretKey=builder.Configuration.GetSection("Stripe:SecretKey").Value;
 
@@ -59,6 +60,7 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddOpenApi();
 var app = builder.Build();
 
 // --- 5. خط أنابيب الطلبات (HTTP Request Pipeline) ---

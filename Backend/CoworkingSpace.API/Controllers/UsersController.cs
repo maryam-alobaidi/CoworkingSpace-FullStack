@@ -159,7 +159,10 @@ namespace CoworkingSpace.API.Controllers
             return Ok("User updated successfully.");
         }
 
+      
+
         [HttpGet]
+      
         public async Task<List<userModel>> GetAllUsers()
         {
             return await clsUsers.GetAllUsers();

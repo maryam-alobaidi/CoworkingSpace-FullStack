@@ -117,7 +117,6 @@ namespace CoworkingSpace.API.Controllers
         {
             try
             {
-
                 var booking = await clsSpaceBookings.GetAllSpaceBookings();
                 if (booking == null || booking.Count == 0)
                     return NotFound("No booking ticket.");
@@ -218,6 +217,7 @@ namespace CoworkingSpace.API.Controllers
 
 
         }
+
 
         [HttpGet("GetBookedSlots")]
         public async Task<IActionResult> GetBookedSlots(int spaceId, DateTime bookingDate)
@@ -330,6 +330,7 @@ namespace CoworkingSpace.API.Controllers
             }
         }
 
+
         [HttpGet("active-bookings")]
         public async Task<IActionResult> getActiveBookings()
         {
@@ -344,6 +345,7 @@ namespace CoworkingSpace.API.Controllers
                 return StatusCode(500, new { message = "An error occurred while return active bookings.", error = ex.Message });
             }
         }
+
 
         [HttpGet ("recent-reservation")]
         public async Task<IActionResult> getRecentSpaceReservations()

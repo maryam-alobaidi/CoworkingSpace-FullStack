@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class AiChatService {
 
-  private apiUrl='https://localhost:7167/api/AiChat/send';
+  private apiUrl='http://localhost:8080/api/AiChat/send';
   private http=inject(HttpClient);
 
   sendMessage(userInput:string):Observable<any>{

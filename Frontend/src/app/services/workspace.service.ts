@@ -6,7 +6,7 @@ import { WorkSpace } from '../models/workspace.model';
 @Injectable({providedIn:'root'})
 export class WorkSpaceService{
 
-  private apiUrl='https://localhost:7167/api/WorkspaceSpaces'
+  private apiUrl='http://localhost:8080/api/WorkspaceSpaces'
 
   private http=inject(HttpClient);
   workspaces=signal<WorkSpace[]>([]);
@@ -24,7 +24,7 @@ export class WorkSpaceService{
       
       map(data => data.map(space => ({
         ...space,
-        imageUrl:this.imageMap[space.spaceType] || 'https://picsum.photos/seed/default/600/400'
+        imageUrl:this.imageMap[space.spaceType] || 'http://picsum.photos/seed/default/600/400'
       }))),
       
       tap(mappedData => this.workspaces.set(mappedData))
@@ -35,7 +35,7 @@ export class WorkSpaceService{
 
    return this.http.get<WorkSpace>(`${this.apiUrl}/${id}`).pipe(
       map(space=>({
-        ...space,imageUrl:this.imageMap[space.spaceType] || 'https://picsum.photos/seed/default/600/400'
+        ...space,imageUrl:this.imageMap[space.spaceType] || 'http://picsum.photos/seed/default/600/400'
       }))
    )
   }

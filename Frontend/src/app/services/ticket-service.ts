@@ -9,7 +9,7 @@ import { RecentEventTicket } from '../models/recent-event-ticket';
 })
 export class TicketService {
   private http = inject(HttpClient);
-  private apiUrl = 'https://localhost:7167/api/EventTickets';
+  private apiUrl = 'http://localhost:8080/api/EventTickets';
 
   
 

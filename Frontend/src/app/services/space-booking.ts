@@ -10,7 +10,7 @@ import { WorkSpace } from '../models/workspace.model';
 export class SpaceBooking {
 
   private http=inject(HttpClient);
-  private apiUrl = 'https://localhost:7167/api/SpaceBookings';
+  private apiUrl = 'http://localhost:8080/api/SpaceBookings';
 
   getBookedSlots(spaceId:number,bookingDate:any):Observable<string[]>{
 

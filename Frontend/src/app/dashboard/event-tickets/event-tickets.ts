@@ -99,7 +99,7 @@ printEventTicket() {
       <html>
         <head>
           <title>Print Ticket - Vantage Events</title>
-          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+          <link rel="stylesheet" href="http://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
           <style>
             body { 
               font-family: system-ui, -apple-system, sans-serif; 

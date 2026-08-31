@@ -11,7 +11,7 @@ import { UserWithRoleModel } from '../models/user-with-role-model';
 export class Auth {
   private http = inject(HttpClient);
   private notificationsService=inject(Notification);
-  private apiUrl = 'https://localhost:7167/api/Users';
+  private apiUrl = 'http://localhost:8080/api/Users';
 
   
   currentUser = signal<{ userInfo: UserModel } | null>(

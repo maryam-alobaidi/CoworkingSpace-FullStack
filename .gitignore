@@ -5,6 +5,8 @@
 
 # dotenv files
 .env
+db-init/*.bak
+*.exe
 
 # User-specific files
 *.rsuser

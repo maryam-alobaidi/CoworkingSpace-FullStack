@@ -36,7 +36,7 @@ export class AiChat {
 
     this.aiChatService.sendMessage(text).subscribe({
       next: (res) => {
-    
+     this.userInput = '';
         this.ngZone.run(() => {
           this.isTyping = false;
           this.messages.push({ text: res.message, sender: 'ai' });

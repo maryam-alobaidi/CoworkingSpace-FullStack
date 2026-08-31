@@ -9,7 +9,7 @@ import { RecentEventTicket } from '../models/recent-event-ticket';
 })
 export class EventSevice {
 
-  private apiUrl='https://localhost:7167/api/Events'
+  private apiUrl='http://localhost:8080/api/Events'
 
   private http=inject(HttpClient);
   events=signal<EventModel[]>([]);
@@ -36,7 +36,7 @@ export class EventSevice {
         return {
           ...ev,
           
-          imageUrl:this.imageMap[randomId] || 'https://picsum.photos/seed/default/600/400'
+          imageUrl:this.imageMap[randomId] || 'http://picsum.photos/seed/default/600/400'
         };
       })),
       
@@ -54,7 +54,7 @@ export class EventSevice {
         return {
           ...ev,
           
-          imageUrl:this.imageMap[randomId] || 'https://picsum.photos/seed/default/600/400'
+          imageUrl:this.imageMap[randomId] || 'http://picsum.photos/seed/default/600/400'
         };
       })),
       

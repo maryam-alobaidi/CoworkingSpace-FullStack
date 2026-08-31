@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=YourStrong@Passw0rd
+    ports:
+      - "1433:1433"
+    volumes:
+       - ./db-init:/var/opt/mssql/backup
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "YourStrong@Passw0rd", "-C", "-Q", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  db-init:
+    image: mcr.microsoft.com/mssql-tools
+    volumes:
+      - ./db-init:/scripts
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    command: >
+      /opt/mssql-tools/bin/sqlcmd -S sqlserver -U sa -P YourStrong@Passw0rd -C -i /scripts/init.sql
+
+  backend:
+    build: ./Backend
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=CoworkSpaceDB;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;
+      - Jwt__Key=${JWT_KEY}
+      - Stripe__SecretKey=${STRIPE_SECRET_KEY}
+      - EmailSettings__AppPassword=${EMAIL_APP_PASSWORD}
+      - OpenAI__ApiKey=${OPENAI_API_KEY}
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+
+  frontend:
+    build: ./Frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend

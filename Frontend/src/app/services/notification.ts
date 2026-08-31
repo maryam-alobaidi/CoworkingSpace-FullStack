@@ -8,7 +8,7 @@ import { HttpClient } from '@angular/common/http';
 export class Notification {
 
   private http=inject(HttpClient);
-  private apiUrl='https://localhost:7167/api/Notifications';
+  private apiUrl='http://localhost:8080/api/Notifications';
 
     notifications=signal<NotificationModel[]>([]);
     unReadCount=computed(()=>this.notifications().filter(n=>!n.isRead).length);

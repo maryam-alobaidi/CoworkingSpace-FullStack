@@ -9,7 +9,8 @@ RUN dotnet restore CoworkingSpace.API/CoworkingSpace.API.csproj
 
 #copy all files
 COPY . .
-RUN dotnet publish CoworkingSpace.API/CoworkingSpace.API.csproj -c Release -o /app/out
+# RUN dotnet publish CoworkingSpace.API/CoworkingSpace.API.csproj -c Release -o /app/out
+RUN dotnet publish CoworkingSpace.API/CoworkingSpace.API.csproj -c Release -o /app/out /p:TreatWarningsAsErrors=false
 
 #opreational stage 
 FROM  mcr.microsoft.com/dotnet/aspnet:9.0

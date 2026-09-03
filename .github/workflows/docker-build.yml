@@ -22,7 +22,7 @@ jobs:
       - name: Build and push backend image
         run: |
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/coworkingapi:latest ./Backend
-          docker pushس ${{ secrets.DOCKERHUB_USERNAME }}/coworkingapi:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/coworkingapi:latest
 
       - name: Build and push frontend image
         run: |

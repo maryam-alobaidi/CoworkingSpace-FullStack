@@ -484,3 +484,6 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Stripe CLI binary (download locally, do not commit)
+stripe.exe

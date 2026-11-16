@@ -110,3 +110,32 @@
     padding-left: 18px;
     padding-right: 18px;
 }
+// Not-found / error panels
+.state-card {
+  max-width: 520px;
+}
+
+// Time slots: even grid — 2 columns on phones, more as the card gets wider.
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.5rem;
+
+  .time-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    min-height: 48px; // comfortable tap target
+    white-space: nowrap;
+  }
+
+  .slot-time {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .slot-tag {
+    font-size: 10px;
+  }
+}

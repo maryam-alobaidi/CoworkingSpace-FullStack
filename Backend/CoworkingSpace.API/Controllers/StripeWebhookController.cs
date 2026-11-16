@@ -13,14 +13,17 @@ namespace CoworkingSpace.API.Controllers
     [Route("api/webhook")]
     public class StripeWebhookController : Controller
     {
-        // هذا السر ستحصلين عليه عند تشغيل Stripe CLI لأجل تجربة عملية الدفع المحلية
-        const string endpointSecret = "whsec_e67b06dbc1d89e5c5cd52f802fa16d914289cb6cdf3bdd4f5d6f02f0878be101";
+        // Signing secret comes from config "Stripe:WebhookSecret" (env var Stripe__WebhookSecret).
+        // Locally it is the whsec_... value printed by `stripe listen`.
+        private readonly string _endpointSecret;
 
         private readonly IEmailService _emailService;
 
-        public StripeWebhookController(IEmailService emailService)
+        public StripeWebhookController(IEmailService emailService, IConfiguration configuration)
         {
             _emailService = emailService;
+            _endpointSecret = configuration["Stripe:WebhookSecret"]
+                ?? throw new InvalidOperationException("Stripe:WebhookSecret is not configured.");
         }
 
         [HttpPost]
@@ -30,7 +33,7 @@ namespace CoworkingSpace.API.Controllers
             try
             {
                 var stripeEvent = EventUtility.ConstructEvent(json,
-                    Request.Headers["Stripe-Signature"], endpointSecret);
+                    Request.Headers["Stripe-Signature"], _endpointSecret);
 
                 if (stripeEvent.Type == "checkout.session.completed")
                 {

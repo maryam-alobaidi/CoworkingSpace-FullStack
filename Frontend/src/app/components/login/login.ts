@@ -57,6 +57,10 @@ export class Login {
         }
       },
       error: (err) => {
+        if (err?.status === 403 && err?.error?.isSuspended) {
+          this.toastr.error("User is not active. Contact with the service.");
+          return;
+        }
         this.toastr.error("Invalid credentials or server error.");
       }
     });

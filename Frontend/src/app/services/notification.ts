@@ -1,6 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { NotificationModel } from '../models/notification.model';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -8,7 +9,7 @@ import { HttpClient } from '@angular/common/http';
 export class Notification {
 
   private http=inject(HttpClient);
-  private apiUrl='http://localhost:8080/api/Notifications';
+  private apiUrl=`${environment.apiBaseUrl}/Notifications`;
 
     notifications=signal<NotificationModel[]>([]);
     unReadCount=computed(()=>this.notifications().filter(n=>!n.isRead).length);

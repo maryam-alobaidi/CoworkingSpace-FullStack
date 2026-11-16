@@ -2,11 +2,12 @@ import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { map, Observable, tap } from 'rxjs';
 import { WorkSpace } from '../models/workspace.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({providedIn:'root'})
 export class WorkSpaceService{
 
-  private apiUrl='http://localhost:8080/api/WorkspaceSpaces'
+  private apiUrl=`${environment.apiBaseUrl}/WorkspaceSpaces`
 
   private http=inject(HttpClient);
   workspaces=signal<WorkSpace[]>([]);

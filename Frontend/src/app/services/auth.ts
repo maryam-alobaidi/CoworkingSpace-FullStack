@@ -4,6 +4,7 @@ import { Observable, tap } from 'rxjs';
 import { UserModel } from '../models/user.model';
 import { Notification } from '../services/notification';
 import { UserWithRoleModel } from '../models/user-with-role-model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -11,7 +12,7 @@ import { UserWithRoleModel } from '../models/user-with-role-model';
 export class Auth {
   private http = inject(HttpClient);
   private notificationsService=inject(Notification);
-  private apiUrl = 'http://localhost:8080/api/Users';
+  private apiUrl = `${environment.apiBaseUrl}/Users`;
 
   
   currentUser = signal<{ userInfo: UserModel } | null>(

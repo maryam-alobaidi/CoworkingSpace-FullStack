@@ -46,7 +46,8 @@ builder.Services.AddCors(options =>
 builder.Services.Configure<EmailSettingsModel>(builder.Configuration.GetSection("EmailSettings"));
 // تسجيل خدمة الإيميل لتكون متاحة للحقن (Dependency Injection) في الـ Controllers
 builder.Services.AddScoped<IEmailService, EmailService>();
-builder.Services.AddScoped<IAiAgentService, AiAgentService>();
+// Singleton: builds the Semantic Kernel once and keeps per-conversation chat history in memory.
+builder.Services.AddSingleton<IAiAgentService, AiAgentService>();
 
 var stripeSecretKey=builder.Configuration.GetSection("Stripe:SecretKey").Value;
 

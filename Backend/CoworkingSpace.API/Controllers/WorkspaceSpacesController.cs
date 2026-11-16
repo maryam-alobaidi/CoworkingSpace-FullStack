@@ -2,6 +2,8 @@
 using CoworkingSpace.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using CoworkingSpace.API.Security;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CoworkingSpace.API.Controllers
 {
@@ -53,6 +55,7 @@ namespace CoworkingSpace.API.Controllers
 
         }
 
+        [Authorize(Roles = Roles.Admin)]
         [HttpPost("add")]
         public async Task<IActionResult> Post([FromBody] workspaceSpaceModel model)
         {
@@ -87,6 +90,7 @@ namespace CoworkingSpace.API.Controllers
         }
 
 
+        [Authorize(Roles = Roles.Admin)]
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -111,6 +115,7 @@ namespace CoworkingSpace.API.Controllers
         }
 
 
+        [Authorize(Roles = Roles.Admin)]
         [HttpPut("update/{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] workspaceSpaceModel model)
         {

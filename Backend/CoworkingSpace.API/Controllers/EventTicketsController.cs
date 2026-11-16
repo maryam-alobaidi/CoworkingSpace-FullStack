@@ -1,6 +1,9 @@
-﻿using CoworkingSpace.BLL;
+﻿using CoworkingSpace.API.Security;
+using CoworkingSpace.BLL;
 using CoworkingSpace.BLL.Interfaces;
 using CoworkingSpace.Models;
+using Microsoft.AspNetCore.Authorization;
+using CoworkingSpace.API.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 
 
@@ -8,14 +11,21 @@ namespace CoworkingSpace.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class EventTicketsController : ControllerBase
     {
         private readonly IEmailService _emailService;
+        private readonly IConfiguration _configuration;
 
-        public EventTicketsController(IEmailService emailService)
+        public EventTicketsController(IEmailService emailService, IConfiguration configuration)
         {
             _emailService = emailService;
+            _configuration = configuration;
         }
+
+        // Where Stripe sends the customer back after checkout. Config "Frontend:BaseUrl" (env Frontend__BaseUrl).
+        private string FrontendUrl => (_configuration["Frontend:BaseUrl"] ?? "http://localhost:4200").TrimEnd('/');
+
 
 
             [HttpPost("add")]
@@ -24,6 +34,8 @@ namespace CoworkingSpace.API.Controllers
                 try
                 {
                     if (model == null) return BadRequest("Ticket booking data is required.");
+                    if (model.Quantity <= 0) return BadRequest("Quantity must be at least 1.");
+                    if (!User.CanAccessUser(model.UserId)) return Forbid();
 
                     var user = clsUsers.Find(model.UserId);
                     if (user == null) return NotFound("User not found.");
@@ -120,8 +132,8 @@ namespace CoworkingSpace.API.Controllers
                             },
                         },
                             Mode = "payment",
-                            SuccessUrl = $"http://localhost:4200/payment-success?ticketIds={ticketIdsString}&referenceType=Event&qty={model.Quantity}",
-                            CancelUrl = $"http://localhost:4200/payment-failed?ticketId={primaryTicketId}",
+                            SuccessUrl = $"{FrontendUrl}/payment-success?ticketIds={ticketIdsString}&referenceType=Event&qty={model.Quantity}&session_id={{CHECKOUT_SESSION_ID}}",
+                            CancelUrl = $"{FrontendUrl}/payment-failed?ticketId={primaryTicketId}",
                             Metadata = new Dictionary<string, string>
                         {
                             { "Type", "Event" },
@@ -148,7 +160,7 @@ namespace CoworkingSpace.API.Controllers
                 }
                 catch (Exception ex)
                 {
-                    return StatusCode(500, $"Error: {ex.Message}");
+                    return this.ServerError(ex, "An error occurred while processing the ticket payment.");
                 }
             }
 
@@ -168,6 +180,35 @@ namespace CoworkingSpace.API.Controllers
 
                     if (!ticketIdList.Any()) return BadRequest("Invalid ticket IDs format.");
 
+                    // Never trust the client's word that it paid: look the Checkout Session up in Stripe
+                    // and make sure it is paid and was created for exactly these tickets.
+                    if (string.IsNullOrEmpty(model.TransactionId) || !model.TransactionId.StartsWith("cs_"))
+                        return BadRequest("A valid Stripe checkout session id is required.");
+
+                    Stripe.Checkout.Session session;
+                    try
+                    {
+                        session = await new Stripe.Checkout.SessionService().GetAsync(model.TransactionId);
+                    }
+                    catch (Stripe.StripeException)
+                    {
+                        return BadRequest("Stripe checkout session not found.");
+                    }
+
+                    if (session.PaymentStatus != "paid")
+                        return BadRequest("Payment has not been completed.");
+
+                    var paidTicketIds = (session.Metadata != null && session.Metadata.TryGetValue("TicketIds", out var rawPaidIds) ? rawPaidIds : "")
+                        .Split(',')
+                        .Select(id => int.TryParse(id, out var parsedId) ? parsedId : 0)
+                        .Where(id => id > 0)
+                        .ToHashSet();
+
+                    if (!ticketIdList.All(paidTicketIds.Contains))
+                        return BadRequest("These tickets do not belong to the given payment.");
+
+                    string verifiedTransactionId = session.PaymentIntentId ?? session.Id;
+
                     int eventId = 0;
                     int userId = 0;
                     bool processingSuccessful = false;
@@ -179,6 +220,8 @@ namespace CoworkingSpace.API.Controllers
 
                         if (ticketModel != null)
                         {
+                            if (!User.CanAccessUser(ticketModel.UserId)) return Forbid();
+
                             eventId = ticketModel.EventId;
                             userId = ticketModel.UserId;
 
@@ -192,7 +235,7 @@ namespace CoworkingSpace.API.Controllers
                                     UserId = ticketModel.UserId,
                                     PurchaseDate = ticketModel.PurchaseDate == default(DateTime) ? DateTime.Now : ticketModel.PurchaseDate,
                                     PaymentStatus = "Complete",
-                                    TransactionId = model.TransactionId,
+                                    TransactionId = verifiedTransactionId,
                                     Mode = clsEventTickets.enMode.update
                                 };
 
@@ -251,8 +294,7 @@ namespace CoworkingSpace.API.Controllers
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"💥 CRITICAL ERROR in ConfirmPayment: {ex.Message}");
-                    return StatusCode(500, $"Error during confirmation: {ex.Message}");
+                    return this.ServerError(ex, "Error during payment confirmation.");
                 }
             }
         
@@ -269,6 +311,7 @@ namespace CoworkingSpace.API.Controllers
                 {
                     return NotFound("Ticket ID not found.");
                 }
+                if (!User.CanAccessUser(eventTicket.UserId)) return Forbid();
 
                 if (eventTicket.PaymentStatus != "Pending")
                 {
@@ -298,8 +341,8 @@ namespace CoworkingSpace.API.Controllers
                     Mode = "payment",
 
                     // 🌟 إصلاح دالة الـ Repay: إرسال الكمية كـ 1 ثابتة بما أن إعادة الدفع تتم لتذكرة فرعية محددة ومفردة
-                    SuccessUrl = $"http://localhost:4200/payment-success?ticketIds={eventTicket.Id}&referenceType=Event&qty=1",
-                    CancelUrl = $"http://localhost:4200/payment-failed?ticketId={eventTicket.Id}",
+                    SuccessUrl = $"{FrontendUrl}/payment-success?ticketIds={eventTicket.Id}&referenceType=Event&qty=1&session_id={{CHECKOUT_SESSION_ID}}",
+                    CancelUrl = $"{FrontendUrl}/payment-failed?ticketId={eventTicket.Id}",
 
                     Metadata = new Dictionary<string, string>
                     {
@@ -316,12 +359,13 @@ namespace CoworkingSpace.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Error: {ex.Message}");
+                return this.ServerError(ex, "An error occurred while processing the ticket payment.");
             }
         }
 
 
 
+        [Authorize(Roles = Roles.Admin)]
         [HttpGet("getAll")]
         public async Task<IActionResult> Get()
         {
@@ -341,6 +385,7 @@ namespace CoworkingSpace.API.Controllers
 
 
 
+        [Authorize(Roles = Roles.Admin)]
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> Delete(int Id)
         {
@@ -368,6 +413,7 @@ namespace CoworkingSpace.API.Controllers
 
                 var eventTicketDetails = await clsEventTickets.Find(Id);
                 if (eventTicketDetails == null) return NotFound("Event Ticket not found.");
+                if (!User.CanAccessUser(eventTicketDetails.UserId)) return Forbid();
 
                 return Ok(eventTicketDetails);
             }
@@ -377,6 +423,7 @@ namespace CoworkingSpace.API.Controllers
             }
         }
 
+        [Authorize(Roles = Roles.Admin)]
         [HttpPut("update/{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] CreateTicketEventModel model)
         {
@@ -411,13 +458,14 @@ namespace CoworkingSpace.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Error during updating the event ticket details: {ex.Message}");
+                return this.ServerError(ex, "An error occurred while updating the event ticket.");
             }
         }
 
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetUserTickets(int userId)
         {
+            if (!User.CanAccessUser(userId)) return Forbid();
             try
             {
                 var tickets = await clsEventTickets.GetTicketsByUserId(userId);
@@ -427,10 +475,11 @@ namespace CoworkingSpace.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                return this.ServerError(ex, "An error occurred while loading event tickets.");
             }
         }
 
+        [Authorize(Roles = Roles.Admin)]
         [HttpGet("recent-event-ticket")]
         public async Task<IActionResult> GetRecentEventTicket()
         {
@@ -442,7 +491,7 @@ namespace CoworkingSpace.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                return this.ServerError(ex, "An error occurred while loading event tickets.");
             }
         }
     }

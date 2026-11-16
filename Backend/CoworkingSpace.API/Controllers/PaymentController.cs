@@ -1,5 +1,8 @@
-﻿using CoworkingSpace.BLL;
+﻿using CoworkingSpace.API.Security;
+using CoworkingSpace.BLL;
 using CoworkingSpace.Models;
+using Microsoft.AspNetCore.Authorization;
+using CoworkingSpace.API.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Stripe;
 
@@ -7,6 +10,7 @@ namespace CoworkingSpace.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
 
     // I don't use but i will save this class if i wsnt i future use it
     public class PaymentsController : ControllerBase
@@ -49,6 +53,7 @@ namespace CoworkingSpace.API.Controllers
         }
 
 
+        [Authorize(Roles = Roles.Admin)]
         [HttpGet("total-payments")]
         public async Task<IActionResult> GetTotalRevenue()
         {
@@ -60,7 +65,7 @@ namespace CoworkingSpace.API.Controllers
             }
             catch(Exception ex)
             {
-                return StatusCode(500, new { message = "An error occurred while calculating total revenue.", error = ex.Message });
+                return this.ServerError(ex, "An error occurred while calculating total revenue.");
             }
         }
 

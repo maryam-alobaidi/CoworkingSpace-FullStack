@@ -1,5 +1,8 @@
-﻿using CoworkingSpace.BLL;
+﻿using CoworkingSpace.API.Security;
+using CoworkingSpace.BLL;
 using CoworkingSpace.Models;
+using Microsoft.AspNetCore.Authorization;
+using CoworkingSpace.API.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -10,15 +13,21 @@ namespace CoworkingSpace.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class UsersController : ControllerBase
     {
         private readonly IConfiguration _configuration;
+        private readonly ILogger<UsersController> _logger;
 
-        public UsersController(IConfiguration configuration)
+        public UsersController(IConfiguration configuration, ILogger<UsersController> logger)
         {
             _configuration = configuration;
+            _logger = logger;
         }
 
+        private const int DefaultMemberRoleId = 5;
+
+        [AllowAnonymous]
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromBody] CreateUserModel model)
         {
@@ -45,7 +54,8 @@ namespace CoworkingSpace.API.Controllers
                 return StatusCode(500, "An error occurred while adding the user.");
             }
 
-            int finalRoleId = model.RoleId ?? 5;
+            // Only an authenticated admin (admin dashboard) may choose the role; public sign-ups are always members.
+            int finalRoleId = User.IsAdmin() && model.RoleId.HasValue ? model.RoleId.Value : DefaultMemberRoleId;
             
             userRoleModel roleModel = new userRoleModel
             {
@@ -63,6 +73,7 @@ namespace CoworkingSpace.API.Controllers
         }
 
 
+        [AllowAnonymous]
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestModel model)
         {
@@ -78,8 +89,26 @@ namespace CoworkingSpace.API.Controllers
                 return Unauthorized("Invalid email or password.");
             }
 
+            if (user.IsSuspended)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, new { message = "This account is suspended.", isSuspended = true });
+            }
+
+            // Upgrade old SHA-256 hashes to PBKDF2 now that we have the plain password.
+            if (clsPasswordHasher.NeedsRehash(user.PasswordHash))
+            {
+                string newSalt = clsPasswordHasher.GenerateSalt();
+                user.PasswordSalt = newSalt;
+                user.PasswordHash = clsPasswordHasher.ComputeHash(model.Password, newSalt);
+                try { await user.Save(); }
+                catch (Exception ex) { _logger.LogWarning(ex, "Could not upgrade password hash for user {UserId}", user.Id); }
+            }
+
            
-            string userRole = await clsUserRoles.GetRoleNameByUserId(user.Id) ?? "User";
+            string userRole = await clsUserRoles.GetRoleNameByUserId(user.Id);
+            if (string.IsNullOrEmpty(userRole)) userRole = "User";
+            // Normalize so [Authorize(Roles = "Admin")] matches regardless of DB casing.
+            if (string.Equals(userRole, Roles.Admin, StringComparison.OrdinalIgnoreCase)) userRole = Roles.Admin;
 
             // تمرير الـ Role إلى دالة توليد التوكن
             var token = GenerateJwtToken(user, userRole);
@@ -124,6 +153,7 @@ namespace CoworkingSpace.API.Controllers
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
+        [Authorize(Roles = Roles.Admin)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -138,6 +168,7 @@ namespace CoworkingSpace.API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateUserModel model)
         {
+            if (!User.CanAccessUser(id)) return Forbid();
             if (model == null || string.IsNullOrEmpty(model.FullName) || string.IsNullOrEmpty(model.Email))
             {
                 return BadRequest("Invalid user data.");
@@ -161,8 +192,8 @@ namespace CoworkingSpace.API.Controllers
 
       
 
+        [Authorize(Roles = Roles.Admin)]
         [HttpGet]
-      
         public async Task<List<userModel>> GetAllUsers()
         {
             return await clsUsers.GetAllUsers();
@@ -171,6 +202,7 @@ namespace CoworkingSpace.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUserById(int id)
         {
+            if (!User.CanAccessUser(id)) return Forbid();
             var user = clsUsers.Find(id);
             if (user == null)
             {
@@ -185,6 +217,7 @@ namespace CoworkingSpace.API.Controllers
             });
         }
 
+        [Authorize(Roles = Roles.Admin)]
         [HttpGet("total-members")]
          public async Task<IActionResult> GetTotalMembersCount()
         {
@@ -196,10 +229,11 @@ namespace CoworkingSpace.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "An error occurred while return the count total members.", error = ex.Message });
+                return this.ServerError(ex, "An error occurred while counting members.");
             }
         }
 
+        [Authorize(Roles = Roles.Admin)]
         [HttpGet("with-role")]
         public async Task<IActionResult> GetUsersWhitRole()
         {
@@ -211,10 +245,11 @@ namespace CoworkingSpace.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                return this.ServerError(ex, "An error occurred while loading users.");
             }
         }
 
+        [Authorize(Roles = Roles.Admin)]
         [HttpPatch("toggle-suspend/{Id}")]
         public async Task<IActionResult> ToggleSuspend(int Id)
         {
@@ -240,7 +275,7 @@ namespace CoworkingSpace.API.Controllers
             catch (Exception ex)
             {
                
-                return StatusCode(500, new { message = "An error occurred: " + ex.Message });
+                return this.ServerError(ex, "An error occurred while updating the user status.");
             }
         }
     }

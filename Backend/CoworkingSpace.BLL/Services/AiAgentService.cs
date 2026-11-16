@@ -64,7 +64,8 @@ namespace CoworkingSpace.BLL.Services
         {
             try
             {
-                string filePath = "company-info.txt";
+                // Resolve next to the app binaries: under IIS the working directory is not the app folder.
+                string filePath = Path.Combine(AppContext.BaseDirectory, "company-info.txt");
                 if (File.Exists(filePath))
                 {
                     return File.ReadAllText(filePath);

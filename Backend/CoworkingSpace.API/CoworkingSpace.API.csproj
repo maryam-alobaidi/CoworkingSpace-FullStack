@@ -20,6 +20,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Read at runtime by AiAgentService for the chat system prompt. -->
+    <None Update="company-info.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\CoworkingSpace.BLL\CoworkingSpace.BLL.csproj" />
     <ProjectReference Include="..\CoworkingSpace.Models\CoworkingSpace.Models.csproj" />
   </ItemGroup>

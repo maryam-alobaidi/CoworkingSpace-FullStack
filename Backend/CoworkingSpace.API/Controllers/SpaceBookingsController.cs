@@ -1,6 +1,9 @@
-﻿using CoworkingSpace.BLL;
+﻿using CoworkingSpace.API.Security;
+using CoworkingSpace.BLL;
 using CoworkingSpace.BLL.Interfaces;
 using CoworkingSpace.Models;
+using Microsoft.AspNetCore.Authorization;
+using CoworkingSpace.API.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Stripe;
 using System.Collections.Generic;
@@ -9,16 +12,22 @@ namespace CoworkingSpace.API.Controllers
 {
     [Route("api/SpaceBookings")] 
     [ApiController]
+    [Authorize]
     public class SpaceBookingsController : Controller
     {
 
         private readonly IEmailService _emailService;
-        
+        private readonly IConfiguration _configuration;
 
-        public SpaceBookingsController(IEmailService emailService)
+        public SpaceBookingsController(IEmailService emailService, IConfiguration configuration)
         {
             _emailService = emailService;
+            _configuration = configuration;
         }
+
+        // Where Stripe sends the customer back after checkout. Config "Frontend:BaseUrl" (env Frontend__BaseUrl).
+        private string FrontendUrl => (_configuration["Frontend:BaseUrl"] ?? "http://localhost:4200").TrimEnd('/');
+
 
         [HttpPost("add")]
         public async Task<IActionResult> Add([FromBody] CreateSpaceBookingModel model)
@@ -26,6 +35,7 @@ namespace CoworkingSpace.API.Controllers
             try
             {
                 if (model == null) return BadRequest("Booking data is required.");
+                if (!User.CanAccessUser(model.UserId)) return Forbid();
 
                 var user = clsUsers.Find(model.UserId);
                 if (user == null) return NotFound("User not found.");
@@ -80,8 +90,8 @@ namespace CoworkingSpace.API.Controllers
                 },
                         Mode = "payment",
                         // 🌟 هنا السحر! نخبر Stripe عندما ينجح العميل في الدفع، أعده تلقائياً إلى هذا الرابط في الأنجولار
-                        SuccessUrl = "http://localhost:4200/payment-success?bookingId=" + spaceBookings.Id,
-                        CancelUrl = "http://localhost:4200/payment-failed?bookingId=" + spaceBookings.Id,
+                        SuccessUrl = $"{FrontendUrl}/payment-success?bookingId=" + spaceBookings.Id,
+                        CancelUrl = $"{FrontendUrl}/payment-failed?bookingId=" + spaceBookings.Id,
 
                         Metadata = new Dictionary<string, string>
                 {
@@ -107,11 +117,12 @@ namespace CoworkingSpace.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Error: {ex.Message}");
+                return this.ServerError(ex, "An error occurred while processing the booking payment.");
             }
         }
 
 
+        [Authorize(Roles = Roles.Admin)]
         [HttpGet("getAll")]
         public async Task<IActionResult> Get()
         {
@@ -139,6 +150,10 @@ namespace CoworkingSpace.API.Controllers
                 {
                     return BadRequest("Booking Ticket ID is required.");
                 }
+
+                var booking = clsSpaceBookings.Find(Id);
+                if (booking == null) return NotFound("Booking not found or could not be deleted.");
+                if (!User.CanAccessUser(booking.UserId)) return Forbid();
 
                 var isDeleted = await clsSpaceBookings.Delete(Id);
                 if (!isDeleted)
@@ -168,6 +183,7 @@ namespace CoworkingSpace.API.Controllers
                 {
                     return NotFound("Booking Ticket not found.");
                 }
+                if (!User.CanAccessUser(bookingTicketDetails.UserId)) return Forbid();
                 return Ok(bookingTicketDetails);
             }
             catch (Exception ex)
@@ -178,6 +194,7 @@ namespace CoworkingSpace.API.Controllers
 
         }
 
+        [Authorize(Roles = Roles.Admin)]
         [HttpPut("update/{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] CreateSpaceBookingModel model)
         {
@@ -219,6 +236,7 @@ namespace CoworkingSpace.API.Controllers
         }
 
 
+        [AllowAnonymous]
         [HttpGet("GetBookedSlots")]
         public async Task<IActionResult> GetBookedSlots(int spaceId, DateTime bookingDate)
         {
@@ -248,6 +266,7 @@ namespace CoworkingSpace.API.Controllers
                 {
                     return BadRequest("Valid User ID is required.");
                 }
+                if (!User.CanAccessUser(id)) return Forbid();
 
 
                 List <spaceBookingsModel> bookings = await clsSpaceBookings.getUserBooking(id);
@@ -265,7 +284,7 @@ namespace CoworkingSpace.API.Controllers
             {
                
                
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                return this.ServerError(ex, "An error occurred while loading bookings.");
             }
         }
 
@@ -280,6 +299,7 @@ namespace CoworkingSpace.API.Controllers
                 {
                     return NotFound("Id not found.");
                 }
+                if (!User.CanAccessUser(spaceBooking.UserId)) return Forbid();
 
 
                 if (spaceBooking.PaymentStatus != "Pending")
@@ -309,8 +329,8 @@ namespace CoworkingSpace.API.Controllers
                 },
             },
                     Mode = "payment",
-                    SuccessUrl = "http://localhost:4200/payment-success?bookingId=" + spaceBooking.Id,
-                    CancelUrl = "http://localhost:4200/payment-failed?bookingId=" + spaceBooking.Id,
+                    SuccessUrl = $"{FrontendUrl}/payment-success?bookingId=" + spaceBooking.Id,
+                    CancelUrl = $"{FrontendUrl}/payment-failed?bookingId=" + spaceBooking.Id,
                     Metadata = new Dictionary<string, string>
             {
                 { "Type", "Space" },
@@ -326,11 +346,12 @@ namespace CoworkingSpace.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Error: {ex.Message}");
+                return this.ServerError(ex, "An error occurred while processing the booking payment.");
             }
         }
 
 
+        [Authorize(Roles = Roles.Admin)]
         [HttpGet("active-bookings")]
         public async Task<IActionResult> getActiveBookings()
         {
@@ -342,12 +363,13 @@ namespace CoworkingSpace.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "An error occurred while return active bookings.", error = ex.Message });
+                return this.ServerError(ex, "An error occurred while counting active bookings.");
             }
         }
 
 
-        [HttpGet ("recent-reservation")]
+        [Authorize(Roles = Roles.Admin)]
+        [HttpGet("recent-reservation")]
         public async Task<IActionResult> getRecentSpaceReservations()
         {
             try
@@ -358,7 +380,7 @@ namespace CoworkingSpace.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "An error occurred while returning recent bookings.", error = ex.Message });
+                return this.ServerError(ex, "An error occurred while returning recent bookings.");
             }
         }
 

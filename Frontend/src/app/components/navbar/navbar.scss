@@ -69,4 +69,152 @@
   color: #555; 
 }
 
+// Notification panel: 300px on desktop, but never wider than a phone screen.
+.notif-menu {
+  min-width: min(300px, calc(100vw - 2rem));
+}
 
+// ---- Collapsed (mobile/tablet) menu ----
+@media (max-width: 991.98px) {
+  .site-navbar .navbar-collapse {
+    margin-top: 0.5rem;
+    padding: 0.5rem 0 0.75rem;
+    border-top: 1px solid var(--bs-border-color);
+    max-height: calc(100dvh - 70px); // long menus scroll instead of running off-screen
+    overflow-y: auto;
+  }
+
+  .site-navbar .navbar-nav {
+    gap: 0.15rem;
+    margin-bottom: 0.75rem;
+
+    .nav-link {
+      padding: 0.65rem 0.75rem;
+      border-radius: 0.6rem;
+    }
+
+    .nav-link.active {
+      background-color: rgba(13, 110, 253, 0.08);
+      color: #0d6efd;
+    }
+
+    .dropdown-menu {
+      box-shadow: none !important;
+      background-color: var(--bs-tertiary-bg);
+      margin: 0 0.5rem 0.25rem;
+    }
+  }
+
+  .nav-actions {
+    border-top: 1px solid var(--bs-border-color);
+    padding-top: 0.75rem;
+  }
+
+  // Guest: two equal, comfortably tappable buttons.
+  .nav-auth {
+    width: 100%;
+
+    // Tablets: don't stretch the buttons across the whole screen.
+    @media (min-width: 576px) {
+      max-width: 420px;
+    }
+
+    .btn {
+      flex: 1 1 0;
+      padding-top: 0.55rem;
+      padding-bottom: 0.55rem;
+      font-size: 0.95rem;
+    }
+  }
+
+  // Logged in: name on the left, bell + avatar on the right.
+  .nav-actions,
+  .nav-user {
+    width: 100%;
+  }
+
+  .nav-user-name {
+    min-width: 0;
+    padding-left: 0.75rem;
+  }
+}
+
+// ---- Hamburger button (phones & tablets) ----
+.menu-toggle {
+  position: relative;
+  width: 44px;               // comfortable touch target
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background-color: #f1f4f9;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+
+  // The display above would otherwise override Bootstrap's rule that hides the toggler
+  // once the navbar expands (navbar-expand-lg), so hide it explicitly on large screens.
+  @media (min-width: 992px) {
+    display: none;
+  }
+
+  &:hover {
+    background-color: #e6ebf3;
+  }
+
+  // Replace Bootstrap's thick focus box with a subtle ring, only for keyboard focus.
+  &:focus {
+    box-shadow: none;
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.35);
+  }
+
+  .menu-toggle-bar {
+    display: block;
+    width: 20px;
+    height: 2px;
+    border-radius: 2px;
+    background-color: #1f2937;
+    transition: transform 0.25s ease, opacity 0.2s ease, width 0.25s ease;
+  }
+
+  // Middle bar slightly shorter for a modern look.
+  .menu-toggle-bar:nth-child(2) {
+    width: 14px;
+    align-self: center;
+    transform: translateX(-3px);
+  }
+
+  // Open state -> X
+  &[aria-expanded="true"] {
+    background-color: rgba(13, 110, 253, 0.1);
+
+    .menu-toggle-bar {
+      background-color: #0d6efd;
+    }
+
+    .menu-toggle-bar:nth-child(1) {
+      transform: translateY(7px) rotate(45deg);
+    }
+
+    .menu-toggle-bar:nth-child(2) {
+      opacity: 0;
+      transform: translateX(-8px);
+    }
+
+    .menu-toggle-bar:nth-child(3) {
+      transform: translateY(-7px) rotate(-45deg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .menu-toggle-bar {
+      transition: none;
+    }
+  }
+}

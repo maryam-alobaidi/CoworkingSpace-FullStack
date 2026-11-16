@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { WorkSpace } from '../models/workspace.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -10,7 +11,7 @@ import { WorkSpace } from '../models/workspace.model';
 export class SpaceBooking {
 
   private http=inject(HttpClient);
-  private apiUrl = 'http://localhost:8080/api/SpaceBookings';
+  private apiUrl = `${environment.apiBaseUrl}/SpaceBookings`;
 
   getBookedSlots(spaceId:number,bookingDate:any):Observable<string[]>{
 

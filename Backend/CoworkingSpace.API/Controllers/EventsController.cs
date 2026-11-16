@@ -1,7 +1,10 @@
 ﻿using CoworkingSpace.BLL;
 using CoworkingSpace.Models;
 using Microsoft.AspNetCore.Http;
+using CoworkingSpace.API.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
+using CoworkingSpace.API.Security;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CoworkingSpace.API.Controllers
 {
@@ -10,6 +13,7 @@ namespace CoworkingSpace.API.Controllers
     public class EventsController : ControllerBase // Inherit from ControllerBase for API controllers
     {
 
+        [Authorize(Roles = Roles.Admin)]
         [HttpPost("add")]
         public async Task<IActionResult> Add([FromBody] eventModel model)
         {
@@ -45,7 +49,7 @@ namespace CoworkingSpace.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Error during adding the event details.", details = ex.Message });
+                return this.ServerError(ex, "Error during adding the event details.");
             }
         }
 
@@ -93,6 +97,7 @@ namespace CoworkingSpace.API.Controllers
             }
         }
 
+        [Authorize(Roles = Roles.Admin)]
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> Delete(int Id)
         {
@@ -113,7 +118,7 @@ namespace CoworkingSpace.API.Controllers
             catch (Exception ex)
             {
 
-                return StatusCode(500, $"Error: {ex.Message} -> {ex.InnerException?.Message}");
+                return this.ServerError(ex, "An error occurred while deleting the event.");
             }
         }
 
@@ -135,9 +140,10 @@ namespace CoworkingSpace.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Error: {ex.Message}"); 
+                return this.ServerError(ex, "An error occurred while loading the event.");
             }
         }
+        [Authorize(Roles = Roles.Admin)]
         [HttpPut("update/{id}")]
         public async Task<IActionResult> Update(int Id, [FromBody] eventModel model)
         {
@@ -179,9 +185,10 @@ namespace CoworkingSpace.API.Controllers
             catch (Exception ex)
             {
                 // تسجيل الخطأ الحقيقي لمساعدتك في الـ Debugging
-                return StatusCode(500, new { message = $"Error during update: {ex.Message}" });
+                return this.ServerError(ex, "An error occurred while updating the event.");
             }
         }
+        [Authorize(Roles = Roles.Admin)]
         [HttpGet("upcoming-events")]
         public async  Task<IActionResult> GetUpcomingEventsCount()
         {
@@ -193,7 +200,7 @@ namespace CoworkingSpace.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "An error occurred while return the count Upcoming Events.", error = ex.Message });
+                return this.ServerError(ex, "An error occurred while counting upcoming events.");
             }
         }
 

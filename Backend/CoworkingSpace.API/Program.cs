@@ -13,6 +13,8 @@ var builder = WebApplication.CreateBuilder(args);
 // --- 1. تسجيل الخدمات الأساسية (Core Services) ---
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+// Unhandled exceptions become RFC 7807 ProblemDetails responses without internal details.
+builder.Services.AddProblemDetails();
 
 // --- 2. إعداد قاعدة البيانات (Database Connection) ---
 string? connString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -23,11 +25,20 @@ if (string.IsNullOrEmpty(connString))
 clsPrimaryFunctions.Initialize(connString);
 
 // --- 3. سياسة الوصول (CORS Policy) ---
-// تسمح هذه السياسة لتطبيق Angular بالوصول إلى الـ API من نطاقات مختلفة
+// Only the configured frontend origins may call the API from a browser.
+// Config: "Cors:AllowedOrigins" (array; env Cors__AllowedOrigins__0, __1, ...). Falls back to "Frontend:BaseUrl".
+string[] allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+    ?.Where(o => !string.IsNullOrWhiteSpace(o)).Select(o => o.TrimEnd('/')).ToArray()
+    ?? Array.Empty<string>();
+if (allowedOrigins.Length == 0)
+{
+    allowedOrigins = new[] { (builder.Configuration["Frontend:BaseUrl"] ?? "http://localhost:4200").TrimEnd('/') };
+}
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular",
-        policy => policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+        policy => policy.WithOrigins(allowedOrigins).AllowAnyMethod().AllowAnyHeader());
 });
 
 // --- 4. إعدادات الإيميل (Email Infrastructure) ---
@@ -35,7 +46,8 @@ builder.Services.AddCors(options =>
 builder.Services.Configure<EmailSettingsModel>(builder.Configuration.GetSection("EmailSettings"));
 // تسجيل خدمة الإيميل لتكون متاحة للحقن (Dependency Injection) في الـ Controllers
 builder.Services.AddScoped<IEmailService, EmailService>();
-builder.Services.AddScoped<IAiAgentService, AiAgentService>();
+// Singleton: builds the Semantic Kernel once and keeps per-conversation chat history in memory.
+builder.Services.AddSingleton<IAiAgentService, AiAgentService>();
 
 var stripeSecretKey=builder.Configuration.GetSection("Stripe:SecretKey").Value;
 
@@ -56,14 +68,16 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+            builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is not configured.")))
     };
 });
 
-builder.Services.AddOpenApi();
 var app = builder.Build();
 
 // --- 5. خط أنابيب الطلبات (HTTP Request Pipeline) ---
+app.UseExceptionHandler();
+app.UseStatusCodePages();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();

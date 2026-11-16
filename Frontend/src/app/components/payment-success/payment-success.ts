@@ -35,9 +35,13 @@ export class PaymentSuccess implements OnInit {
         this.quantity = params.get('qty');
         this.type = 'Event';
 
-        const stripeSessionId = params.get('session_id') || 'ST-SUCCESS-' + this.referenceId;
-        
-        if (this.referenceId) {
+        // Stripe appends session_id after a real checkout. Free tickets have no session and are
+        // already confirmed by the server, so there is nothing to verify.
+        const stripeSessionId = params.get('session_id');
+
+        if (!stripeSessionId) {
+          this.toastr.success('Your booking has been confirmed!', 'Success');
+        } else if (this.referenceId) {
           const confirmData = {
             ticketIds: this.referenceId,            // تم تعديل الاسم لـ ticketIds ونرسله كـ string
             quantity: Number(this.quantity || 1),   // الكمية الإجمالية للمقاعد

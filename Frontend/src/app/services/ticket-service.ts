@@ -3,13 +3,14 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { RecentEventTicket } from '../models/recent-event-ticket';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TicketService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:8080/api/EventTickets';
+  private apiUrl = `${environment.apiBaseUrl}/EventTickets`;
 
   
 

@@ -1,41 +1,158 @@
+// Dark footer that matches the hero section and the confirmation emails (#11141a).
+$footer-bg: #11141a;
+$footer-text: #a0a5b0;
+$footer-heading: #ffffff;
+$footer-line: rgba(255, 255, 255, 0.08);
+$accent: #0d6efd;
 
-//mail
-.icon-circle {
+.site-footer {
+  background-color: $footer-bg;
+  color: $footer-text;
+  padding-top: 3.5rem;
+  font-size: 0.95rem;
+
+  a {
+    color: $footer-text;
+    text-decoration: none;
+    transition: color 0.2s ease;
+
+    &:hover,
+    &:focus-visible {
+      color: #ffffff;
+    }
+  }
+}
+
+.footer-main {
+  padding-bottom: 2.5rem;
+}
+
+// Brand
+.footer-logo {
+  font-family: 'Great Vibes', cursive;
+  font-size: 2rem;
+  line-height: 1;
+  color: #ffffff;
+}
+
+.footer-crown {
+  font-size: 1.3rem;
+  margin-top: -10px;
+  transform: rotate(15deg);
+  background: linear-gradient(135deg, #e0e0e0, #a0a0a0, #d1d1d1, #7a7a7a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.footer-tagline {
+  max-width: 340px;
+  line-height: 1.6;
+}
+
+// Round icon buttons
+.footer-social {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 35px;
-  height: 35px;
-  background-color: #e9ecef; 
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  color: #0d6efd;
-  margin-left: 10px;
-  transition: all 0.3s ease;
+  background-color: rgba(255, 255, 255, 0.06);
+  color: #ffffff !important;
+  font-size: 1.05rem;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+
+  &:hover,
+  &:focus-visible {
+    background-color: $accent;
+    transform: translateY(-2px);
+  }
 }
 
-.icon-circle:hover {
-
-  background-color: #0d6efd;
-  color: white;
-  transform: translateY(-1px);
+.footer-social-whatsapp:hover,
+.footer-social-whatsapp:focus-visible {
+  background-color: #198754;
 }
 
-//Whatsapp
-.icon-circle-whatsapp {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 35px;
-  height: 35px;
-  background-color: #e9ecef; 
-  border-radius: 50%;
-  margin-left: 10px;
-  color: #198754 ;
-  transition: all 0.3s ease;
+// Column headings
+.footer-heading {
+  color: $footer-heading;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 1.1rem;
 }
 
-.icon-circle-whatsapp:hover {
-  transform: translateY(-1px);
-  background-color:#198754;
-  color: white !important;
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  li + li {
+    margin-top: 0.55rem;
+  }
+
+  a {
+    display: inline-block;
+    padding: 0.15rem 0; // a bit more tap area on phones
+  }
+}
+
+.footer-contact {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    min-width: 0;
+
+    + li {
+      margin-top: 0.75rem;
+    }
+  }
+
+  i {
+    color: $accent;
+    font-size: 1rem;
+    margin-top: 0.1rem;
+    flex-shrink: 0;
+  }
+
+  a,
+  span {
+    overflow-wrap: anywhere; // long email never overflows on small phones
+  }
+}
+
+// Bottom bar
+.footer-bottom {
+  border-top: 1px solid $footer-line;
+  padding: 1.25rem 0;
+  font-size: 0.85rem;
+  text-align: center;
+
+  strong {
+    color: #ffffff;
+    font-weight: 600;
+  }
+}
+
+// Phones: center the brand block and leave room for the floating chat button.
+@media (max-width: 575.98px) {
+  .site-footer {
+    padding-top: 2.5rem;
+  }
+
+  .footer-main {
+    padding-bottom: 1.75rem;
+  }
+
+  .footer-bottom {
+    padding-bottom: 5.5rem;
+  }
 }

@@ -170,6 +170,32 @@
   }
 }
 
+// Phones: smaller launcher, and the chat panel spans the screen width instead of a fixed 360px.
+@media (max-width: 575.98px) {
+  bottom: 16px;
+  right: 16px;
+
+  .chat-toggle-btn {
+    width: 52px;
+    height: 52px;
+    font-size: 21px;
+  }
+
+  .chat-box {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: 80px;
+    width: auto;
+    height: min(480px, calc(100dvh - 110px));
+  }
+
+  .chat-box .chat-input-area input {
+    font-size: 16px; // prevents iOS from zooming in on focus
+    min-width: 0;
+  }
+}
+
 @keyframes bounce {
   0%, 80%, 100% { 
     transform: scale(0);

@@ -14,6 +14,11 @@ export class AdminLayout implements OnInit{
    authService=inject(Auth);
    toastr=inject(ToastrService);
    adminName=signal<string|null>(null);
+   // Mobile drawer state; on desktop the sidebar is always shown via CSS.
+   sidebarOpen=signal(false);
+
+   toggleSidebar(){ this.sidebarOpen.update(open => !open); }
+   closeSidebar(){ this.sidebarOpen.set(false); }
 
   ngOnInit() {
   

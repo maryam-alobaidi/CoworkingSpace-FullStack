@@ -3,13 +3,14 @@ import { inject, Injectable, signal } from '@angular/core';
 import { map, Observable, tap } from 'rxjs';
 import { EventModel } from '../models/event.model';
 import { RecentEventTicket } from '../models/recent-event-ticket';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class EventSevice {
 
-  private apiUrl='http://localhost:8080/api/Events'
+  private apiUrl=`${environment.apiBaseUrl}/Events`
 
   private http=inject(HttpClient);
   events=signal<EventModel[]>([]);

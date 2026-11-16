@@ -1,12 +1,15 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top site-navbar">
   <div class="container">
     <a class="navbar-brand d-flex align-items-center" href="#">
       <h1 class="vantage-logo text-dark fw-bold m-0 me-2">VANTAGE</h1>
       <i class="fa-solid fa-crown silver-crown"></i>
     </a>
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
+    <!-- Hamburger: three bars that morph into an X while the menu is open (driven by aria-expanded, which Bootstrap updates) -->
+    <button class="navbar-toggler menu-toggle collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Open menu">
+      <span class="menu-toggle-bar" aria-hidden="true"></span>
+      <span class="menu-toggle-bar" aria-hidden="true"></span>
+      <span class="menu-toggle-bar" aria-hidden="true"></span>
     </button>
 
     <div class="collapse navbar-collapse" id="navbarNav">
@@ -35,10 +38,12 @@
         }
       </ul>
 
-      <div class="d-flex align-items-center gap-2">
+      <div class="nav-actions d-flex align-items-center gap-2">
         @if(authService.currentUser()){
-          <div class="d-flex align-items-center gap-2">
-            <span class="text-muted fw-medium ms-2 me-1">
+          <div class="nav-user d-flex align-items-center gap-2">
+            <!-- Phones/tablets: compact name; the full greeting only fits on wide screens -->
+            <span class="nav-user-name d-lg-none fw-semibold text-dark text-truncate me-auto">{{ authService.currentUser()?.userInfo?.fullName }}</span>
+            <span class="text-muted fw-medium ms-2 me-1 d-none d-xl-inline">
               Welcome dear, <strong class="text-primary">{{ authService.currentUser()?.userInfo?.fullName }}</strong> 👋
             </span>
               <!-- //notification -->
@@ -54,7 +59,7 @@
               }
               </button>
 
-              <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-4 p-0 overflow-hidden" style="min-width: 300px; background-color: #1a1b1f;" aria-labelledby="notificationDropdown">
+              <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-4 p-0 overflow-hidden notif-menu" style="background-color: #1a1b1f;" aria-labelledby="notificationDropdown">
                 <li>
                   <div class="d-flex justify-content-between align-items-center p-3 border-bottom border-secondary border-opacity-25">
                     <h6 class="text-white fw-bold m-0 fs-5">Notifications</h6>
@@ -147,8 +152,10 @@
             </div>
           </div>
         }@else {
-          <button class="btn btn-outline-primary btn-sm rounded-pill px-4" routerLink="/login" routerLinkActive="active">Login</button>
-          <button class="btn btn-primary btn-sm rounded-pill px-4" routerLink="/register" routerLinkActive="active">Sign Up</button>
+          <div class="nav-auth d-flex gap-2">
+            <button class="btn btn-outline-primary btn-sm rounded-pill px-4" routerLink="/login" routerLinkActive="active">Login</button>
+            <button class="btn btn-primary btn-sm rounded-pill px-4" routerLink="/register" routerLinkActive="active">Sign Up</button>
+          </div>
         }
       </div>
     </div>

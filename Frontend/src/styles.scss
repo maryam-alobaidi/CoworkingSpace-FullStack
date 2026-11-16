@@ -1,2 +1,10 @@
 /* You can add global styles to this file, and also import other style files */
 @import "ngx-toastr/toastr";
+
+/* Admin tables: on narrow screens keep columns readable and scroll the table horizontally
+   inside .table-responsive instead of squeezing every column. */
+@media (max-width: 991.98px) {
+  .admin-content .table-responsive > .table {
+    min-width: 720px;
+  }
+}

@@ -9,6 +9,7 @@ import { Profile } from './components/profile/profile';
 import { EditProfile } from './components/edit-profile/edit-profile';
 import { Booking } from './components/space-book/booking';
 import { authGuard } from './guards/auth-guard';
+import { adminGuard } from './guards/admin-guard';
 import { PaymentSuccess} from './components/payment-success/payment-success';
 import { OfficeBookings } from './dashboard/office-bookings/office-bookings';
 import { EventTickets } from './dashboard/event-tickets/event-tickets';
@@ -29,18 +30,19 @@ export const routes: Routes = [
     { path: 'register', component: Register },
     { path: 'events', component: EventsList },
     { path: 'workspace', component: WorkspaceList },
-    { path: 'profile', component: Profile },
-    { path: 'edit-profile', component: EditProfile },
+    { path: 'profile', component: Profile, canActivate: [authGuard] },
+    { path: 'edit-profile', component: EditProfile, canActivate: [authGuard] },
     { path: 'book/:id', component:Booking, canActivate: [authGuard]},//the guard is here for guard the system
     { path: 'payment-success', component: PaymentSuccess },
-    { path: 'dashboard/office-bookings', component: OfficeBookings },
-    { path: 'dashboard/event-tickets', component: EventTickets },
+    { path: 'dashboard/office-bookings', component: OfficeBookings, canActivate: [authGuard] },
+    { path: 'dashboard/event-tickets', component: EventTickets, canActivate: [authGuard] },
     { path: 'payment-failed' , component: PaymentFailed},
-    { path: 'event-book/:id' , component:EventBook },
+    { path: 'event-book/:id' , component:EventBook, canActivate: [authGuard] },
 
     {
         path: 'admin',
-        component: AdminLayout, // الهيكل الخارجي (Navbar + Sidebar)
+        component: AdminLayout,
+        canActivate: [adminGuard], // الهيكل الخارجي (Navbar + Sidebar)
         children: [
             { path: '', redirectTo: 'overview', pathMatch: 'full' }, 
             { path: 'overview', component: AdminOverview } ,

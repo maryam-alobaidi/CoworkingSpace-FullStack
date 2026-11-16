@@ -1,17 +1,22 @@
-﻿using CoworkingSpace.BLL;
+﻿using CoworkingSpace.API.Security;
+using CoworkingSpace.BLL;
 using CoworkingSpace.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CoworkingSpace.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class NotificationsController : ControllerBase
     {
         // get notifications for specific user
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetNotifications(int userId)
         {
+            if (!User.CanAccessUser(userId)) return Forbid();
+
             var notifications = await clsNotifications.GetAllNotificationsByUserID(userId);
 
             if (notifications == null || notifications.Count == 0)
@@ -35,6 +40,7 @@ namespace CoworkingSpace.API.Controllers
 
 
         // add new notification
+        [Authorize(Roles = Roles.Admin)]
         [HttpPost("add")]
         public async Task<IActionResult> AddNotification([FromBody] notificationsModel model)
         {

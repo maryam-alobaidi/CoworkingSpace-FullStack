@@ -35,6 +35,7 @@ services:
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=CoworkSpaceDB;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;
       - Jwt__Key=${JWT_KEY}
       - Stripe__SecretKey=${STRIPE_SECRET_KEY}
+      - Stripe__WebhookSecret=${STRIPE_WEBHOOK_SECRET}
       - EmailSettings__AppPassword=${EMAIL_APP_PASSWORD}
       - OpenAI__ApiKey=${OPENAI_API_KEY}
     depends_on:

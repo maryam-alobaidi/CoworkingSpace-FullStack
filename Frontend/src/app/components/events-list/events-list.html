@@ -10,10 +10,7 @@
 
   <div class="row g-4">
 
-    @for (ev of eventService.events(); track ev.id) {
-
-      
-      @if(getEventDate(ev.eventDate)>=today){
+    @for (ev of upcomingEvents(); track ev.id) {
 
       <div class="col-12 col-md-6 col-lg-4">
         <div class="card h-100 event-card border-0 shadow-sm overflow-hidden position-relative bg-white">
@@ -86,14 +83,23 @@
 
         </div>
       </div>
-    }
     } @empty {
-      <div class="col-12 text-center py-5">
-        <div class="spinner-border text-primary mb-3" role="status">
-          <span class="visually-hidden">Loading events...</span>
+      @if (!loaded()) {
+        <div class="col-12 text-center py-5">
+          <div class="spinner-border text-primary mb-3" role="status">
+            <span class="visually-hidden">Loading events...</span>
+          </div>
+          <p class="text-muted">Discovering inspiring events for you...</p>
         </div>
-        <p class="text-muted">Discovering inspiring events for you...</p>
-      </div>
+      } @else {
+        <div class="col-12">
+          <div class="text-center py-5 px-3 border border-dashed rounded-4 bg-white">
+            <i class="bi bi-calendar-x fs-1 text-secondary d-block mb-3" aria-hidden="true"></i>
+            <h3 class="h5 fw-bold text-dark">No upcoming events right now</h3>
+            <p class="text-muted mb-0 mx-auto" style="max-width: 420px;">New talks and workshops are added regularly. Check back soon, or ask our assistant what's coming up.</p>
+          </div>
+        </div>
+      }
     }
 
   </div>

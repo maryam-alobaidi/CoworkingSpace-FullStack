@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { WorkSpaceService } from '../../services/workspace.service';
 import { EventSevice } from '../../services/event.service';
 import { DatePipe } from '@angular/common';
@@ -22,6 +22,15 @@ export class Home {
    workSpaceList=signal<any|null>(null);
 
    public today = new Date();
+
+   // Next three events from the start of today onward (filter first, then take 3).
+   upcomingEvents = computed(() => {
+     const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
+     return this.eventService.events()
+       .filter(ev => this.getEventDate(ev.eventDate) >= startOfToday)
+       .sort((a, b) => this.getEventDate(a.eventDate).getTime() - this.getEventDate(b.eventDate).getTime())
+       .slice(0, 3);
+   });
 
   ngOnInit(): void {
     

@@ -3,7 +3,7 @@
 
 <div class="hero-section d-flex align-items-center text-white position-relative overflow-hidden">
   <div class="container position-relative z-3 py-5 text-center text-lg-start">
-    <div class="row align-items-center g-5">
+    <div class="row align-items-center g-4 g-lg-5">
       
       
       <div class="col-lg-7">
@@ -36,28 +36,30 @@
 </div>
 
 <div class="container my-5 position-relative z-3 stats-wrapper">
-  <div class="row g-4 text-center bg-white shadow-lg p-5 rounded-5 border border-light">
-    <div class="col-6 col-md-3 border-end border-light">
+  <div class="stats-card bg-white shadow-lg rounded-5 border border-light px-2 py-4 p-md-5">
+  <div class="row gx-0 gy-4 text-center">
+    <div class="col-6 col-md-3 stat-item">
       <h3 class="fw-extrabold text-primary display-5 mb-1">45+</h3>
       <p class="text-muted small mb-0 fw-medium">Premium Spaces</p>
     </div>
-    <div class="col-6 col-md-3 col-md-3-md border-end border-light">
+    <div class="col-6 col-md-3 stat-item">
       <h3 class="fw-extrabold text-success display-5 mb-1">1.2k</h3>
       <p class="text-muted small mb-0 fw-medium">Active Members</p>
     </div>
-    <div class="col-6 col-md-3 border-end border-light">
+    <div class="col-6 col-md-3 stat-item">
       <h3 class="fw-extrabold text-warning display-5 mb-1">250+</h3>
       <p class="text-muted small mb-0 fw-medium">Successful Workshops</p>
     </div>
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-md-3 stat-item">
       <h3 class="fw-extrabold text-danger display-5 mb-1">99%</h3>
       <p class="text-muted small mb-0 fw-medium">Satisfaction Rate</p>
     </div>
   </div>
+  </div>
 </div>
 
 <div class="container my-5 py-5">
-  <div class="d-flex justify-content-between align-items-end mb-5">
+  <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-5">
     <div>
       <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1.5 mb-2 fw-semibold">Workspace Fleet</span>
       <h2 class="fw-extrabold text-dark display-6 m-0">Featured Spaces</h2>
@@ -128,7 +130,7 @@
 
 <!-- 4. (Upcoming Events) -->
 <div class="container my-5 py-5">
-  <div class="d-flex justify-content-between align-items-end mb-5">
+  <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-5">
     <div>
       <span class="badge bg-warning-subtle text-warning-emphasis rounded-pill px-3 py-1.5 mb-2 fw-semibold">Community Pulse</span>
       <h2 class="fw-extrabold text-dark display-6 m-0">Join Our Upcoming Events</h2>
@@ -137,8 +139,7 @@
   </div>
 
   <div class="row g-4">
-    @for (ev of eventService.events().slice(0, 3); track ev.id) {
-      @if (getEventDate(ev.eventDate) >= today) {
+    @for (ev of upcomingEvents(); track ev.id) {
         <div class="col-12 col-md-4">
           <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden home-card position-relative bg-white">
             <div class="position-absolute top-0 end-0 m-3 z-3 bg-white px-3 py-1 rounded-pill shadow-sm small fw-bold text-primary">
@@ -168,7 +169,10 @@
             </div>
           </div>
         </div>
-      }
+    } @empty {
+      <div class="col-12">
+        <p class="text-muted text-center py-4 mb-0">No upcoming events right now. Check back soon!</p>
+      </div>
     }
   </div>
 </div>

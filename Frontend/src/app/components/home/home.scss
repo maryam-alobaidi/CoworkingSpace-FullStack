@@ -28,6 +28,30 @@
 // تعديل تموضع صندوق الإحصائيات
 .stats-wrapper {
   margin-top: -80px !important;
+
+  @media (max-width: 767.98px) {
+    margin-top: -48px !important;
+  }
+}
+
+// Dividers between stats: 2x2 grid on phones (divider after left column), one row on desktop.
+.stat-item {
+  padding: 0 0.5rem;
+  border-color: #eef1f5 !important;
+
+  @media (max-width: 767.98px) {
+    &:nth-child(odd) { border-right: 1px solid; }
+  }
+
+  @media (min-width: 768px) {
+    &:not(:last-child) { border-right: 1px solid; }
+  }
+
+  h3 {
+    @media (max-width: 575.98px) {
+      font-size: 2.1rem;
+    }
+  }
 }
 
 .home-card {

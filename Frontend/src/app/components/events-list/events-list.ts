@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { EventSevice } from '../../services/event.service';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -18,11 +18,21 @@ export class EventsList implements OnInit{
   toastr=inject(ToastrService);
 
   public today=new Date();
+  loaded=signal(false);
+
+  // Events from the start of today onward, soonest first.
+  upcomingEvents=computed(()=>{
+    const startOfToday=new Date(); startOfToday.setHours(0,0,0,0);
+    return this.eventService.events()
+      .filter(ev=>this.getEventDate(ev.eventDate)>=startOfToday)
+      .sort((a,b)=>this.getEventDate(a.eventDate).getTime()-this.getEventDate(b.eventDate).getTime());
+  });
 
   ngOnInit(): void {
     this.eventService.getAllEvents().subscribe(
       {
-           error: (err) => console.error('Error fetching data:', err)
+           next: () => this.loaded.set(true),
+           error: (err) => { this.loaded.set(true); console.error('Error fetching data:', err); }
       }
     )
   }

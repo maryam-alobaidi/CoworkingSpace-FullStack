@@ -1,52 +1,65 @@
-<div class="admin-wrapper d-flex flex-column" style="min-height: 100vh;">
-  
-<nav class="navbar navbar-dark bg-dark px-4 py-3 justify-content-between shadow">
-  
-  <div class="d-flex align-items-center">
-    <h1 class="vantage-logo text-white fw-bold m-0 me-2">VANTAGE</h1>
-    <i class="fa-solid fa-crown silver-crown"></i>
-  </div>
+<div class="admin-wrapper">
 
-  <div class="text-white d-flex align-items-center gap-3">
-    <span>👤 Welcome, Admin {{adminName()}}</span>
-    <button class="btn btn-sm btn-outline-danger" (click)="logout()">Logout</button>
-  </div>
+  <nav class="admin-topbar navbar navbar-dark bg-dark px-3 px-lg-4 py-2 py-lg-3 shadow">
+    <div class="d-flex align-items-center gap-2">
+      <!-- Opens the sidebar drawer on small screens; hidden on desktop where the sidebar is always visible -->
+      <button type="button" class="btn btn-outline-light btn-sm d-lg-none menu-btn"
+              (click)="toggleSidebar()" [attr.aria-expanded]="sidebarOpen()" aria-controls="adminSidebar"
+              aria-label="Toggle admin menu">
+        <i class="bi" [class.bi-list]="!sidebarOpen()" [class.bi-x-lg]="sidebarOpen()"></i>
+      </button>
+      <h1 class="vantage-logo text-white fw-bold m-0">VANTAGE</h1>
+      <i class="fa-solid fa-crown silver-crown"></i>
+    </div>
 
-</nav>
+    <div class="text-white d-flex align-items-center gap-2 gap-sm-3 min-w-0">
+      <span class="admin-greeting text-truncate">
+        <span class="d-none d-sm-inline">👤 Welcome, Admin </span>{{ adminName() }}
+      </span>
+      <button class="btn btn-sm btn-outline-danger flex-shrink-0" (click)="logout()">
+        <i class="bi bi-box-arrow-right d-sm-none" aria-hidden="true"></i>
+        <span class="d-none d-sm-inline">Logout</span>
+        <span class="visually-hidden d-sm-none">Logout</span>
+      </button>
+    </div>
+  </nav>
 
-  <div class="d-flex flex-grow-1">
-    <div class="bg-dark text-white p-3 border-top border-secondary shadow-sm" style="width: 300px; min-height: 100%;">
+  <div class="admin-body">
+    @if (sidebarOpen()) {
+      <div class="sidebar-backdrop d-lg-none" (click)="closeSidebar()" aria-hidden="true"></div>
+    }
+
+    <aside id="adminSidebar" class="admin-sidebar bg-dark text-white p-3" [class.open]="sidebarOpen()">
       <ul class="nav flex-column gap-2 mt-2">
         <li class="nav-item">
-          <a class="nav-link text-white p-2 rounded d-flex align-items-center gap-2" 
-             routerLink="/admin/overview" routerLinkActive="bg-primary fw-bold">
+          <a class="nav-link text-white p-2 rounded d-flex align-items-center gap-2"
+             routerLink="/admin/overview" routerLinkActive="bg-primary fw-bold" (click)="closeSidebar()">
             <i class="bi bi-speedometer2"></i> Dashboard Overview
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-white p-2 rounded d-flex align-items-center gap-2" 
-             routerLink="/admin/events" routerLinkActive="bg-primary fw-bold">
+          <a class="nav-link text-white p-2 rounded d-flex align-items-center gap-2"
+             routerLink="/admin/events" routerLinkActive="bg-primary fw-bold" (click)="closeSidebar()">
             <i class="bi bi-calendar-event"></i> Manage Events
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-white p-2 rounded d-flex align-items-center gap-2" 
-             routerLink="/admin/spaces" routerLinkActive="bg-primary fw-bold">
+          <a class="nav-link text-white p-2 rounded d-flex align-items-center gap-2"
+             routerLink="/admin/spaces" routerLinkActive="bg-primary fw-bold" (click)="closeSidebar()">
             <i class="bi bi-building"></i> Space Reservations
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-white p-2 rounded d-flex align-items-center gap-2" 
-             routerLink="/admin/users" routerLinkActive="bg-primary fw-bold">
+          <a class="nav-link text-white p-2 rounded d-flex align-items-center gap-2"
+             routerLink="/admin/users" routerLinkActive="bg-primary fw-bold" (click)="closeSidebar()">
             <i class="bi bi-people"></i> Users & Roles
           </a>
         </li>
       </ul>
-    </div>
+    </aside>
 
-    <div class="flex-grow-1 p-4 bg-light">
+    <section class="admin-content bg-light p-3 p-md-4">
       <router-outlet></router-outlet>
-    </div>
-
+    </section>
   </div>
 </div>

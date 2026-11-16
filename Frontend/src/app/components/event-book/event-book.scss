@@ -34,3 +34,19 @@
     box-shadow: 0 8px 20px rgba(13, 110, 253, 0.25) !important;
   }
 }
+
+// Event image: tall on desktop, shorter on phones so the booking card is reachable.
+.event-showcase {
+  min-height: 400px;
+
+  @media (max-width: 767.98px) {
+    min-height: 260px;
+  }
+}
+
+// Full-width primary action on phones.
+@media (max-width: 575.98px) {
+  .book-tickets-btn {
+    width: 100%;
+  }
+}
